@@ -63,11 +63,11 @@ Replace prototype sync wording with local-first status language. The app should 
 
 ## Acceptance criteria
 
-- [ ] Signed-out/local Notes show Local only or Saved, not Offline as an error.
-- [ ] Editor shows a subtle status during autosave.
-- [ ] Notes List does not imply backend sync when user is signed out.
-- [ ] Settings copy explains notes remain on this device.
-- [ ] Privacy copy avoids end-to-end encryption claims.
+- [x] Signed-out/local Notes show Local only or Saved, not Offline as an error.
+- [x] Editor shows a subtle status during autosave.
+- [x] Notes List does not imply backend sync when user is signed out.
+- [x] Settings copy explains notes remain on this device.
+- [x] Privacy copy avoids end-to-end encryption claims.
 
 ## Blocked by
 

@@ -8,8 +8,6 @@ export interface Note {
   syncStatus: 'synced' | 'pending' | 'local'
 }
 
-export type SyncStatus = 'idle' | 'syncing' | 'offline'
-
 export const DEFAULT_TAGS = [
   'personal',
   'work',

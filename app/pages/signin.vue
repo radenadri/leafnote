@@ -66,7 +66,7 @@ async function signIn(provider: 'google' | 'apple') {
           name="i-lucide-lock"
           class="w-4 h-4"
         />
-        <span>Your notes are encrypted and private</span>
+        <span>Your notes are private and stored securely</span>
       </div>
     </div>
   </div>

@@ -112,7 +112,7 @@ function settingsItemClass(item: SettingsItem) {
             class="w-5 h-5 text-muted-foreground"
           />
           <span class="flex-1 text-foreground">Sync status</span>
-          <LeafnoteSyncIndicator :status="isSignedIn ? 'idle' : 'offline'" />
+          <LeafnoteSyncIndicator :status="isSignedIn ? 'synced' : 'local-only'" />
         </div>
         <div class="w-full flex items-center gap-3 px-4 py-3 transition-colors">
           <UIcon
@@ -142,8 +142,8 @@ function settingsItemClass(item: SettingsItem) {
               </p>
               <p class="text-sm text-muted-foreground">
                 {{ isSignedIn
-                  ? 'All notes are encrypted and stored securely. Only you can access them.'
-                  : 'Notes are stored locally on your device. Sign in to back them up securely.' }}
+                  ? 'Your notes are private and stored securely. Only you can access them.'
+                  : 'Notes are stored locally on this device. Sign in to back them up securely.' }}
               </p>
             </div>
           </div>

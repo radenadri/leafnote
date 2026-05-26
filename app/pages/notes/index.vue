@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import type { Note, SyncStatus } from '~/types/note'
+import type { LeafnoteStatus } from '~/services/leafnote-status'
+import type { Note } from '~/types/note'
 
 const toast = useToast()
 const { notes, allTags, loadNotes, loadCustomTags, deleteNote, restoreNote } = useLeafnote()
 
-const syncStatus = shallowRef<SyncStatus>('offline')
+const syncStatus = shallowRef<LeafnoteStatus>('local-only')
 const selectedTag = shallowRef<string | null>(null)
 
 onMounted(async () => {

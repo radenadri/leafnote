@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { Note, SyncStatus } from '~/types/note'
+import type { LeafnoteStatus } from '~/services/leafnote-status'
+import type { Note } from '~/types/note'
 
 const route = useRoute()
 const { allTags, loadNotes, loadCustomTags, addCustomTag, findNote, saveNote } = useLeafnote()
@@ -10,7 +11,7 @@ const isNewNote = computed(() => id.value === 'new')
 const title = shallowRef('')
 const content = shallowRef('')
 const tags = ref<string[]>([])
-const syncStatus = shallowRef<SyncStatus>('offline')
+const syncStatus = shallowRef<LeafnoteStatus>('local-only')
 const isTagSheetOpen = shallowRef(false)
 const noteId = shallowRef('')
 const createdAt = shallowRef(new Date())
@@ -49,7 +50,7 @@ function scheduleSave() {
   if (!noteId.value) return
   if (saveTimer) clearTimeout(saveTimer)
 
-  syncStatus.value = 'syncing'
+  syncStatus.value = 'saving'
   saveTimer = setTimeout(() => {
     void saveNow()
   }, 3000)
@@ -72,7 +73,7 @@ async function saveNow() {
     syncStatus: 'local'
   }, { allowEmpty: Boolean(existingNote.value) })
 
-  syncStatus.value = 'offline'
+  syncStatus.value = 'saved'
 }
 
 async function goBack() {

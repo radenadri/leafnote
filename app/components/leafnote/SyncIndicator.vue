@@ -1,36 +1,27 @@
 <script setup lang="ts">
-import type { SyncStatus } from '~/types/note'
+import { getSyncStatusDisplay } from '~/services/leafnote-status'
+import type { LeafnoteStatus } from '~/services/leafnote-status'
 
 const props = defineProps<{
-  status: SyncStatus
+  status: LeafnoteStatus
   class?: string
 }>()
+
+const display = computed(() => getSyncStatusDisplay(props.status))
+const toneClass = computed(() => ({
+  local: 'text-sync-offline',
+  saving: 'text-sync-syncing animate-spin',
+  saved: 'text-sync-idle',
+  synced: 'text-sync-idle'
+}[display.value.tone]))
 </script>
 
 <template>
   <div :class="['flex items-center gap-1.5 text-xs', props.class]">
-    <template v-if="status === 'idle'">
-      <UIcon
-        name="i-lucide-cloud"
-        class="w-3.5 h-3.5 text-sync-idle"
-      />
-      <span class="text-muted-foreground">Synced</span>
-    </template>
-
-    <template v-else-if="status === 'syncing'">
-      <UIcon
-        name="i-lucide-refresh-cw"
-        class="w-3.5 h-3.5 text-sync-syncing animate-spin"
-      />
-      <span class="text-muted-foreground">Syncing...</span>
-    </template>
-
-    <template v-else>
-      <UIcon
-        name="i-lucide-cloud-off"
-        class="w-3.5 h-3.5 text-sync-offline"
-      />
-      <span class="text-muted-foreground">Offline</span>
-    </template>
+    <UIcon
+      :name="display.icon"
+      :class="['w-3.5 h-3.5', toneClass]"
+    />
+    <span class="text-muted-foreground">{{ display.label }}</span>
   </div>
 </template>

@@ -64,7 +64,7 @@ rg -n "bg-leaf|text-sync|safe-top|safe-bottom|focus-ring" app
 
 - `useLeafnote()` currently does not persist Notes. Do not assume IndexedDB exists yet.
 - Editor refs in `app/pages/notes/[id].vue` currently do not save back to state.
-- `SyncStatus` uses prototype values: `idle | syncing | offline`; PRD wants future local-first wording.
+- Use `LeafnoteStatus` values from `app/services/leafnote-status.ts`; avoid showing signed-out local use as Offline.
 - `app/app.config.ts` has `i-ph-*` icon aliases, but package deps include lucide/simple-icons only.
 - `.nuxt/` and `.output/` are generated. Do not edit them.
 
