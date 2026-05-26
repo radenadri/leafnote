@@ -43,8 +43,8 @@ export function useLeafnote() {
     saveCustomTags()
   }
 
-  async function saveNote(note: Note) {
-    await localStore.saveNote(note)
+  async function saveNote(note: Note, options?: { allowEmpty?: boolean }) {
+    await localStore.saveNote(note, options)
     notes.value = await localStore.listNotes()
   }
 

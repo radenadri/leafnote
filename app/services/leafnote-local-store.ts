@@ -7,8 +7,12 @@ export interface LeafnoteLocalStoreOptions {
   dbName?: string
 }
 
+export interface SaveNoteOptions {
+  allowEmpty?: boolean
+}
+
 export interface LeafnoteLocalStore {
-  saveNote: (note: Note) => Promise<void>
+  saveNote: (note: Note, options?: SaveNoteOptions) => Promise<void>
   listNotes: () => Promise<Note[]>
   seedNotesIfEmpty: (notes: Note[]) => Promise<void>
 }
@@ -22,8 +26,8 @@ export function createLeafnoteLocalStore(options: LeafnoteLocalStoreOptions = {}
   const dbName = options.dbName ?? 'leafnote'
 
   return {
-    async saveNote(note) {
-      if (!hasNoteContent(note)) return
+    async saveNote(note, saveOptions = {}) {
+      if (!saveOptions.allowEmpty && !hasNoteContent(note)) return
 
       const db = await openDatabase(dbName)
       await writeToStore(db, NOTES_STORE, serializeNote(note))

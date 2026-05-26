@@ -39,12 +39,12 @@ Make the Editor save Notes locally after a short pause and when the user exits t
 
 ## Acceptance criteria
 
-- [ ] Editor saves title/body changes after 3 seconds of no typing.
-- [ ] Editor saves immediately on blur or back navigation.
-- [ ] UI does not block on network or sign-in.
-- [ ] New Notes are created only after title or body has content.
-- [ ] Existing Notes can be cleared and remain until deleted.
-- [ ] Saved Notes update `updatedAt` and appear newest-first in the Notes List.
+- [x] Editor saves title/body changes after 3 seconds of no typing.
+- [x] Editor saves immediately on blur or back navigation.
+- [x] UI does not block on network or sign-in.
+- [x] New Notes are created only after title or body has content.
+- [x] Existing Notes can be cleared and remain until deleted.
+- [x] Saved Notes update `updatedAt` and appear newest-first in the Notes List.
 
 ## Blocked by
 

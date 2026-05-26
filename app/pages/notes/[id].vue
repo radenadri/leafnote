@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import type { SyncStatus } from '~/types/note'
+import type { Note, SyncStatus } from '~/types/note'
 
 const route = useRoute()
-const { allTags, loadNotes, loadCustomTags, addCustomTag, findNote } = useLeafnote()
+const { allTags, loadNotes, loadCustomTags, addCustomTag, findNote, saveNote } = useLeafnote()
 
 const id = computed(() => String(route.params.id))
 const isNewNote = computed(() => id.value === 'new')
@@ -12,7 +12,10 @@ const content = shallowRef('')
 const tags = ref<string[]>([])
 const syncStatus = shallowRef<SyncStatus>('offline')
 const isTagSheetOpen = shallowRef(false)
-let syncTimer: ReturnType<typeof setTimeout> | undefined
+const noteId = shallowRef('')
+const createdAt = shallowRef(new Date())
+const existingNote = shallowRef<Note | undefined>()
+let saveTimer: ReturnType<typeof setTimeout> | undefined
 
 onMounted(async () => {
   await loadNotes()
@@ -21,26 +24,61 @@ onMounted(async () => {
   if (!isNewNote.value) {
     const note = findNote(id.value)
     if (note) {
+      existingNote.value = note
+      noteId.value = note.id
+      createdAt.value = note.createdAt
       title.value = note.title
       content.value = note.content
       tags.value = [...note.tags]
     }
+  } else {
+    noteId.value = crypto.randomUUID()
+    createdAt.value = new Date()
   }
 })
 
 watch([title, content, tags], () => {
-  if (!title.value && !content.value) return
-
-  syncStatus.value = 'syncing'
-  if (syncTimer) clearTimeout(syncTimer)
-  syncTimer = setTimeout(() => {
-    syncStatus.value = 'offline'
-  }, 1000)
+  scheduleSave()
 }, { deep: true })
 
 onBeforeUnmount(() => {
-  if (syncTimer) clearTimeout(syncTimer)
+  void saveNow()
 })
+
+function scheduleSave() {
+  if (!noteId.value) return
+  if (saveTimer) clearTimeout(saveTimer)
+
+  syncStatus.value = 'syncing'
+  saveTimer = setTimeout(() => {
+    void saveNow()
+  }, 3000)
+}
+
+async function saveNow() {
+  if (!noteId.value) return
+  if (saveTimer) {
+    clearTimeout(saveTimer)
+    saveTimer = undefined
+  }
+
+  await saveNote({
+    id: noteId.value,
+    title: title.value,
+    content: content.value,
+    tags: tags.value,
+    createdAt: createdAt.value,
+    updatedAt: new Date(),
+    syncStatus: 'local'
+  }, { allowEmpty: Boolean(existingNote.value) })
+
+  syncStatus.value = 'offline'
+}
+
+async function goBack() {
+  await saveNow()
+  await navigateTo('/notes')
+}
 
 function removeTag(tag: string) {
   tags.value = tags.value.filter(item => item !== tag)
@@ -54,7 +92,7 @@ function removeTag(tag: string) {
         type="button"
         class="p-2 rounded-lg hover:bg-secondary transition-colors focus-ring"
         aria-label="Go back"
-        @click="navigateTo('/notes')"
+        @click="goBack"
       >
         <UIcon
           name="i-lucide-arrow-left"
@@ -91,12 +129,14 @@ function removeTag(tag: string) {
         type="text"
         placeholder="Title"
         class="w-full text-note-title font-serif font-semibold text-foreground bg-transparent border-none outline-none placeholder:text-ink-faint mb-4"
+        @blur="saveNow"
       >
 
       <textarea
         v-model="content"
         placeholder="Start writing..."
         class="w-full flex-1 min-h-[60vh] text-note-body font-serif text-foreground bg-transparent border-none outline-none resize-none placeholder:text-ink-faint leading-relaxed"
+        @blur="saveNow"
       />
     </main>
 
