@@ -2,7 +2,7 @@
 import type { SyncStatus } from '~/types/note'
 
 const route = useRoute()
-const { allTags, loadCustomTags, addCustomTag, findNote } = useLeafnote()
+const { allTags, loadNotes, loadCustomTags, addCustomTag, findNote } = useLeafnote()
 
 const id = computed(() => String(route.params.id))
 const isNewNote = computed(() => id.value === 'new')
@@ -14,7 +14,8 @@ const syncStatus = shallowRef<SyncStatus>('offline')
 const isTagSheetOpen = shallowRef(false)
 let syncTimer: ReturnType<typeof setTimeout> | undefined
 
-onMounted(() => {
+onMounted(async () => {
+  await loadNotes()
   loadCustomTags()
 
   if (!isNewNote.value) {
@@ -55,7 +56,10 @@ function removeTag(tag: string) {
         aria-label="Go back"
         @click="navigateTo('/notes')"
       >
-        <UIcon name="i-lucide-arrow-left" class="w-5 h-5 text-muted-foreground" />
+        <UIcon
+          name="i-lucide-arrow-left"
+          class="w-5 h-5 text-muted-foreground"
+        />
       </button>
 
       <div class="flex items-center gap-2">
@@ -67,7 +71,10 @@ function removeTag(tag: string) {
           aria-label="Manage tags"
           @click="isTagSheetOpen = true"
         >
-          <UIcon name="i-lucide-tag" class="w-5 h-5 text-muted-foreground" />
+          <UIcon
+            name="i-lucide-tag"
+            class="w-5 h-5 text-muted-foreground"
+          />
           <span
             v-if="tags.length > 0"
             class="absolute -top-0.5 -right-0.5 w-4 h-4 bg-leaf-500 text-primary-foreground text-[10px] rounded-full flex items-center justify-center"
@@ -114,7 +121,10 @@ function removeTag(tag: string) {
             @add-custom-tag="addCustomTag"
           />
         </div>
-        <div v-if="tags.length > 0" class="flex flex-wrap gap-2 pt-4 border-t border-border">
+        <div
+          v-if="tags.length > 0"
+          class="flex flex-wrap gap-2 pt-4 border-t border-border"
+        >
           <LeafnoteTagBadge
             v-for="tag in tags"
             :key="tag"

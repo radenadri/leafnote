@@ -8,6 +8,7 @@
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare",
     "lint": "eslint .",
+    "test": "vitest run",
     "typecheck": "nuxt typecheck"
   },
   "dependencies": {
@@ -20,7 +21,9 @@
   "devDependencies": {
     "@nuxt/eslint": "^1.15.2",
     "eslint": "^10.4.0",
+    "fake-indexeddb": "^6.2.5",
     "typescript": "^6.0.3",
+    "vitest": "^4.1.7",
     "vue-tsc": "^3.3.0"
   },
   "packageManager": "pnpm@11.1.3"

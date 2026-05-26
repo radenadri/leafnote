@@ -1,0 +1,100 @@
+import { beforeEach, describe, expect, it } from 'vitest'
+import { indexedDB } from 'fake-indexeddb'
+import { createLeafnoteLocalStore } from './leafnote-local-store'
+
+describe('Leafnote local Note store', () => {
+  beforeEach(async () => {
+    globalThis.indexedDB = indexedDB
+    await new Promise<void>((resolve, reject) => {
+      const request = indexedDB.deleteDatabase('leafnote-test')
+      request.onsuccess = () => resolve()
+      request.onerror = () => reject(request.error)
+      request.onblocked = () => resolve()
+    })
+  })
+
+  it('persists a Note and loads it after reopening the store', async () => {
+    const firstStore = createLeafnoteLocalStore({ dbName: 'leafnote-test' })
+
+    await firstStore.saveNote({
+      id: 'note-1',
+      title: 'Morning Thoughts',
+      content: 'Quiet mind, better ideas.',
+      tags: ['journal'],
+      createdAt: new Date('2026-01-01T08:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T08:05:00.000Z'),
+      syncStatus: 'local'
+    })
+
+    const secondStore = createLeafnoteLocalStore({ dbName: 'leafnote-test' })
+    const notes = await secondStore.listNotes()
+
+    expect(notes).toEqual([
+      {
+        id: 'note-1',
+        title: 'Morning Thoughts',
+        content: 'Quiet mind, better ideas.',
+        tags: ['journal'],
+        createdAt: new Date('2026-01-01T08:00:00.000Z'),
+        updatedAt: new Date('2026-01-01T08:05:00.000Z'),
+        syncStatus: 'local'
+      }
+    ])
+  })
+
+  it('does not persist a new empty Note', async () => {
+    const store = createLeafnoteLocalStore({ dbName: 'leafnote-test' })
+
+    await store.saveNote({
+      id: 'empty-note',
+      title: '   ',
+      content: '\n\t ',
+      tags: [],
+      createdAt: new Date('2026-01-01T08:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T08:00:00.000Z'),
+      syncStatus: 'local'
+    })
+
+    expect(await store.listNotes()).toEqual([])
+  })
+
+  it('seeds prototype Notes only when the store is empty', async () => {
+    const store = createLeafnoteLocalStore({ dbName: 'leafnote-test' })
+
+    await store.seedNotesIfEmpty([
+      {
+        id: 'seed-note',
+        title: 'Seed Note',
+        content: 'Visible on first launch.',
+        tags: ['ideas'],
+        createdAt: new Date('2026-01-01T08:00:00.000Z'),
+        updatedAt: new Date('2026-01-01T08:00:00.000Z'),
+        syncStatus: 'local'
+      }
+    ])
+
+    await store.seedNotesIfEmpty([
+      {
+        id: 'second-seed',
+        title: 'Second Seed',
+        content: 'Should not overwrite existing local data.',
+        tags: [],
+        createdAt: new Date('2026-01-02T08:00:00.000Z'),
+        updatedAt: new Date('2026-01-02T08:00:00.000Z'),
+        syncStatus: 'local'
+      }
+    ])
+
+    expect(await store.listNotes()).toEqual([
+      {
+        id: 'seed-note',
+        title: 'Seed Note',
+        content: 'Visible on first launch.',
+        tags: ['ideas'],
+        createdAt: new Date('2026-01-01T08:00:00.000Z'),
+        updatedAt: new Date('2026-01-01T08:00:00.000Z'),
+        syncStatus: 'local'
+      }
+    ])
+  })
+})

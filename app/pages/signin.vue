@@ -18,7 +18,10 @@ async function signIn(provider: 'google' | 'apple') {
         aria-label="Go back"
         @click="navigateTo('/')"
       >
-        <UIcon name="i-lucide-arrow-left" class="w-5 h-5 text-muted-foreground" />
+        <UIcon
+          name="i-lucide-arrow-left"
+          class="w-5 h-5 text-muted-foreground"
+        />
       </button>
     </header>
 
@@ -59,7 +62,10 @@ async function signIn(provider: 'google' | 'apple') {
 
     <div class="py-8 animate-fade-in">
       <div class="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-        <UIcon name="i-lucide-lock" class="w-4 h-4" />
+        <UIcon
+          name="i-lucide-lock"
+          class="w-4 h-4"
+        />
         <span>Your notes are encrypted and private</span>
       </div>
     </div>

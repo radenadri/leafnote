@@ -1,12 +1,21 @@
 import { mockNotes } from '~/data/mockNotes'
+import { createLeafnoteLocalStore } from '~/services/leafnote-local-store'
 import { CUSTOM_TAGS_KEY, DEFAULT_TAGS } from '~/types/note'
 import type { Note } from '~/types/note'
 
 export function useLeafnote() {
-  const notes = useState<Note[]>('leafnote-notes', () => [...mockNotes])
+  const notes = useState<Note[]>('leafnote-notes', () => [])
   const customTags = useState<string[]>('leafnote-custom-tags', () => [])
+  const localStore = createLeafnoteLocalStore()
 
   const allTags = computed(() => [...DEFAULT_TAGS, ...customTags.value])
+
+  async function loadNotes() {
+    if (!import.meta.client) return
+
+    await localStore.seedNotesIfEmpty(mockNotes)
+    notes.value = await localStore.listNotes()
+  }
 
   function loadCustomTags() {
     if (!import.meta.client) return
@@ -34,6 +43,11 @@ export function useLeafnote() {
     saveCustomTags()
   }
 
+  async function saveNote(note: Note) {
+    await localStore.saveNote(note)
+    notes.value = await localStore.listNotes()
+  }
+
   function findNote(id: string) {
     return notes.value.find(note => note.id === id)
   }
@@ -52,7 +66,9 @@ export function useLeafnote() {
     notes,
     customTags,
     allTags,
+    loadNotes,
     loadCustomTags,
+    saveNote,
     addCustomTag,
     findNote,
     deleteNote,

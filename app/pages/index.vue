@@ -25,7 +25,10 @@ function go(path: string) {
           @click="go('/notes')"
         >
           Get Started
-          <UIcon name="i-lucide-arrow-right" class="w-4 h-4 ml-2" />
+          <UIcon
+            name="i-lucide-arrow-right"
+            class="w-4 h-4 ml-2"
+          />
         </button>
 
         <button
@@ -40,7 +43,10 @@ function go(path: string) {
 
     <div class="py-8 animate-fade-in">
       <div class="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-        <UIcon name="i-lucide-lock" class="w-4 h-4" />
+        <UIcon
+          name="i-lucide-lock"
+          class="w-4 h-4"
+        />
         <span>Your notes stay on your device until you sign in</span>
       </div>
     </div>

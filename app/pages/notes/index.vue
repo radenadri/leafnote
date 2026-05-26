@@ -2,12 +2,15 @@
 import type { Note, SyncStatus } from '~/types/note'
 
 const toast = useToast()
-const { notes, allTags, loadCustomTags, deleteNote, restoreNote } = useLeafnote()
+const { notes, allTags, loadNotes, loadCustomTags, deleteNote, restoreNote } = useLeafnote()
 
 const syncStatus = shallowRef<SyncStatus>('offline')
 const selectedTag = shallowRef<string | null>(null)
 
-onMounted(loadCustomTags)
+onMounted(async () => {
+  await loadNotes()
+  loadCustomTags()
+})
 
 const filteredNotes = computed(() => {
   const result = [...notes.value].sort(
@@ -48,14 +51,20 @@ function removeNote(note: Note) {
         </div>
 
         <div class="flex items-center gap-1">
-          <LeafnoteSyncIndicator :status="syncStatus" class="mr-2" />
+          <LeafnoteSyncIndicator
+            :status="syncStatus"
+            class="mr-2"
+          />
           <button
             type="button"
             class="p-2 rounded-lg hover:bg-secondary transition-colors focus-ring"
             aria-label="Search notes"
             @click="navigateTo('/search')"
           >
-            <UIcon name="i-lucide-search" class="w-5 h-5 text-muted-foreground" />
+            <UIcon
+              name="i-lucide-search"
+              class="w-5 h-5 text-muted-foreground"
+            />
           </button>
           <button
             type="button"
@@ -63,7 +72,10 @@ function removeNote(note: Note) {
             aria-label="Settings"
             @click="navigateTo('/settings')"
           >
-            <UIcon name="i-lucide-settings" class="w-5 h-5 text-muted-foreground" />
+            <UIcon
+              name="i-lucide-settings"
+              class="w-5 h-5 text-muted-foreground"
+            />
           </button>
         </div>
       </div>
@@ -75,7 +87,10 @@ function removeNote(note: Note) {
       />
     </header>
 
-    <div v-if="notes.length > 0" class="px-4 pt-3 pb-1">
+    <div
+      v-if="notes.length > 0"
+      class="px-4 pt-3 pb-1"
+    >
       <p class="text-xs text-muted-foreground text-center">
         ← Swipe left on a note to delete
       </p>
@@ -83,7 +98,10 @@ function removeNote(note: Note) {
 
     <main class="px-4 py-2 pb-24">
       <template v-if="filteredNotes.length === 0">
-        <div v-if="selectedTag" class="text-center py-16 animate-fade-in">
+        <div
+          v-if="selectedTag"
+          class="text-center py-16 animate-fade-in"
+        >
           <p class="text-muted-foreground">
             No notes with tag "{{ selectedTag }}"
           </p>
@@ -91,7 +109,10 @@ function removeNote(note: Note) {
         <LeafnoteEmptyState v-else />
       </template>
 
-      <div v-else class="space-y-3">
+      <div
+        v-else
+        class="space-y-3"
+      >
         <LeafnoteSwipeableNoteCard
           v-for="(note, index) in filteredNotes"
           :key="note.id"

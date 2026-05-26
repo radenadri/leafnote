@@ -12,6 +12,9 @@ defineEmits<{
     aria-label="Create new note"
     @click="$emit('click')"
   >
-    <UIcon name="i-lucide-plus" class="w-6 h-6 flex-shrink-0 stroke-[2.5]" />
+    <UIcon
+      name="i-lucide-plus"
+      class="w-6 h-6 flex-shrink-0 stroke-[2.5]"
+    />
   </button>
 </template>

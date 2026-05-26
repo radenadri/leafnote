@@ -15,12 +15,12 @@ Create the local-first persistence path for Notes using IndexedDB as the source 
 
 ## Acceptance criteria
 
-- [ ] IndexedDB has a Notes store with `id`, `title`, `content`, `tags`, `createdAt`, `updatedAt`, and `syncStatus` fields.
-- [ ] Notes use stable client-generated IDs.
-- [ ] Notes load from IndexedDB on app start instead of mock data.
-- [ ] User can refresh the browser and keep created/edited Notes.
-- [ ] Empty new Notes are not persisted unless title or body has non-whitespace content.
-- [ ] Existing prototype UI still renders with seeded or migrated local data.
+- [x] IndexedDB has a Notes store with `id`, `title`, `content`, `tags`, `createdAt`, `updatedAt`, and `syncStatus` fields.
+- [x] Notes use stable client-generated IDs.
+- [x] Notes load from IndexedDB on app start instead of mock data.
+- [x] User can refresh the browser and keep created/edited Notes.
+- [x] Empty new Notes are not persisted unless title or body has non-whitespace content.
+- [x] Existing prototype UI still renders with seeded or migrated local data.
 
 ## Blocked by
 

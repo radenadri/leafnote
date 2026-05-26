@@ -23,7 +23,10 @@ const buttons = [
         :aria-label="button.label"
         @click="button.action"
       >
-        <UIcon :name="button.icon" class="w-5 h-5" />
+        <UIcon
+          :name="button.icon"
+          class="w-5 h-5"
+        />
       </button>
     </div>
   </div>

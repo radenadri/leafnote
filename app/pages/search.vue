@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { Note } from '~/types/note'
 
-const { notes } = useLeafnote()
+const { notes, loadNotes } = useLeafnote()
 const query = shallowRef('')
+
+onMounted(loadNotes)
 
 const filteredNotes = computed(() => {
   const value = query.value.trim().toLowerCase()
@@ -28,11 +30,17 @@ function openNote(note: Note) {
           aria-label="Go back"
           @click="navigateTo('/notes')"
         >
-          <UIcon name="i-lucide-arrow-left" class="w-5 h-5 text-muted-foreground" />
+          <UIcon
+            name="i-lucide-arrow-left"
+            class="w-5 h-5 text-muted-foreground"
+          />
         </button>
 
         <div class="flex-1 relative">
-          <UIcon name="i-lucide-search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+          <UIcon
+            name="i-lucide-search"
+            class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground"
+          />
           <input
             v-model="query"
             type="text"
@@ -45,20 +53,32 @@ function openNote(note: Note) {
     </header>
 
     <main class="px-4 py-4">
-      <div v-if="query.trim() === ''" class="text-center py-16 animate-fade-in">
-        <UIcon name="i-lucide-search" class="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
+      <div
+        v-if="query.trim() === ''"
+        class="text-center py-16 animate-fade-in"
+      >
+        <UIcon
+          name="i-lucide-search"
+          class="w-12 h-12 text-muted-foreground/30 mx-auto mb-4"
+        />
         <p class="text-muted-foreground">
           Search your notes
         </p>
       </div>
 
-      <div v-else-if="filteredNotes.length === 0" class="text-center py-16 animate-fade-in">
+      <div
+        v-else-if="filteredNotes.length === 0"
+        class="text-center py-16 animate-fade-in"
+      >
         <p class="text-muted-foreground">
           No notes found for "{{ query }}"
         </p>
       </div>
 
-      <div v-else class="space-y-3">
+      <div
+        v-else
+        class="space-y-3"
+      >
         <p class="text-sm text-muted-foreground mb-4">
           {{ filteredNotes.length }} {{ filteredNotes.length === 1 ? 'result' : 'results' }}
         </p>

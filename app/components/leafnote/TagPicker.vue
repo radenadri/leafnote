@@ -6,7 +6,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   'update:selectedTags': [tags: string[]]
-  addCustomTag: [tag: string]
+  'addCustomTag': [tag: string]
 }>()
 
 const isAddingTag = shallowRef(false)
@@ -61,7 +61,10 @@ function cancelAdd() {
         {{ tag }}
       </button>
 
-      <div v-if="isAddingTag" class="flex items-center gap-1">
+      <div
+        v-if="isAddingTag"
+        class="flex items-center gap-1"
+      >
         <input
           v-model="newTagName"
           type="text"
@@ -78,7 +81,10 @@ function cancelAdd() {
           aria-label="Add tag"
           @click="addTag"
         >
-          <UIcon name="i-lucide-plus" class="w-3.5 h-3.5" />
+          <UIcon
+            name="i-lucide-plus"
+            class="w-3.5 h-3.5"
+          />
         </button>
         <button
           type="button"
@@ -86,7 +92,10 @@ function cancelAdd() {
           aria-label="Cancel"
           @click="cancelAdd"
         >
-          <UIcon name="i-lucide-x" class="w-3.5 h-3.5" />
+          <UIcon
+            name="i-lucide-x"
+            class="w-3.5 h-3.5"
+          />
         </button>
       </div>
 
@@ -96,7 +105,10 @@ function cancelAdd() {
         class="px-3 py-1.5 rounded-full text-sm transition-all border border-dashed border-border hover:border-leaf-400 text-muted-foreground hover:text-foreground inline-flex items-center gap-1.5"
         @click="isAddingTag = true"
       >
-        <UIcon name="i-lucide-plus" class="w-3.5 h-3.5" />
+        <UIcon
+          name="i-lucide-plus"
+          class="w-3.5 h-3.5"
+        />
         New tag
       </button>
     </div>

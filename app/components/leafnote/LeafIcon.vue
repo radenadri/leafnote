@@ -25,9 +25,29 @@ const sizeClass = computed(() => ({
       d="M16 4C16 4 8 8 8 18C8 24 11 28 16 28C21 28 24 24 24 18C24 8 16 4 16 4Z"
       class="fill-primary"
     />
-    <path d="M16 8V24" class="stroke-primary-foreground" stroke-width="1.5" stroke-linecap="round" />
-    <path d="M16 12L12 15" class="stroke-primary-foreground" stroke-width="1.5" stroke-linecap="round" />
-    <path d="M16 16L20 18" class="stroke-primary-foreground" stroke-width="1.5" stroke-linecap="round" />
-    <path d="M16 20L13 22" class="stroke-primary-foreground" stroke-width="1.5" stroke-linecap="round" />
+    <path
+      d="M16 8V24"
+      class="stroke-primary-foreground"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+    <path
+      d="M16 12L12 15"
+      class="stroke-primary-foreground"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+    <path
+      d="M16 16L20 18"
+      class="stroke-primary-foreground"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
+    <path
+      d="M16 20L13 22"
+      class="stroke-primary-foreground"
+      stroke-width="1.5"
+      stroke-linecap="round"
+    />
   </svg>
 </template>
