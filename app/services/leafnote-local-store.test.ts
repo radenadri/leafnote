@@ -58,6 +58,33 @@ describe('Leafnote local Note store', () => {
     expect(await store.listNotes()).toEqual([])
   })
 
+  it('saves Notes whose tags come from Vue reactive state', async () => {
+    const store = createLeafnoteLocalStore({ dbName: 'leafnote-test' })
+    const tags = new Proxy(['journal'], {})
+
+    await store.saveNote({
+      id: 'reactive-tags-note',
+      title: 'Reactive Tags',
+      content: 'Tags come from a Vue ref in the Editor.',
+      tags,
+      createdAt: new Date('2026-01-01T08:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T08:00:00.000Z'),
+      syncStatus: 'local'
+    })
+
+    expect(await store.listNotes()).toEqual([
+      {
+        id: 'reactive-tags-note',
+        title: 'Reactive Tags',
+        content: 'Tags come from a Vue ref in the Editor.',
+        tags: ['journal'],
+        createdAt: new Date('2026-01-01T08:00:00.000Z'),
+        updatedAt: new Date('2026-01-01T08:00:00.000Z'),
+        syncStatus: 'local'
+      }
+    ])
+  })
+
   it('seeds prototype Notes only when the store is empty', async () => {
     const store = createLeafnoteLocalStore({ dbName: 'leafnote-test' })
 

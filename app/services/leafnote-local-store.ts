@@ -86,8 +86,14 @@ function writeManyToStore(db: IDBDatabase, storeName: string, values: StoredNote
     const transaction = db.transaction(storeName, 'readwrite')
     const store = transaction.objectStore(storeName)
 
-    for (const value of values) {
-      store.put(value)
+    try {
+      for (const value of values) {
+        store.put(value)
+      }
+    } catch (error) {
+      transaction.abort()
+      reject(error)
+      return
     }
 
     transaction.oncomplete = () => resolve()
@@ -109,6 +115,7 @@ function readAllFromStore<T>(db: IDBDatabase, storeName: string) {
 function serializeNote(note: Note): StoredNote {
   return {
     ...note,
+    tags: [...note.tags],
     createdAt: note.createdAt.toISOString(),
     updatedAt: note.updatedAt.toISOString()
   }
