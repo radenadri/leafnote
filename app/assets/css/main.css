@@ -135,11 +135,32 @@
 * { border-color: hsl(var(--border)); }
 
 body {
-  background-color: hsl(var(--background));
+  background-color: hsl(var(--secondary));
   color: hsl(var(--foreground));
   font-family: "Inter", system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+.mobile-shell {
+  width: 100%;
+  max-width: 430px;
+  min-height: 100vh;
+  margin: 0 auto;
+  background-color: hsl(var(--background));
+  position: relative;
+  overflow-x: hidden;
+  box-shadow: 0 0 0 1px hsl(var(--border) / 0.5);
+}
+
+.mobile-fixed-full {
+  left: max(calc((100vw - 430px) / 2), 0px) !important;
+  right: max(calc((100vw - 430px) / 2), 0px) !important;
+}
+
+.mobile-fab {
+  left: auto !important;
+  right: max(calc((100vw - 430px) / 2 + 2rem), 2rem) !important;
 }
 
 ::selection { background-color: hsl(var(--primary) / 0.2); }

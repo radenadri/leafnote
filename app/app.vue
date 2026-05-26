@@ -25,6 +25,8 @@ useSeoMeta({
 
 <template>
   <UApp>
-    <NuxtPage />
+    <div class="mobile-shell">
+      <NuxtPage />
+    </div>
   </UApp>
 </template>

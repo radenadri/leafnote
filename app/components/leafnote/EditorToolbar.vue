@@ -13,7 +13,7 @@ const buttons = [
 </script>
 
 <template>
-  <div class="fixed bottom-0 left-0 right-0 bg-background border-t border-border safe-bottom">
+  <div class="mobile-fixed-full fixed bottom-0 left-0 right-0 bg-background border-t border-border safe-bottom">
     <div class="flex items-center justify-center gap-2 py-2 px-4">
       <button
         v-for="button in buttons"
