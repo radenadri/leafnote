@@ -69,57 +69,24 @@ async function undoDelete() {
         </div>
 
         <div class="flex items-center gap-1">
-          <LeafnoteSyncIndicator
-            :status="syncStatus"
-            class="mr-2"
-          />
-          <button
-            type="button"
-            class="p-2 rounded-lg hover:bg-secondary transition-colors focus-ring"
-            aria-label="Search notes"
-            @click="navigateTo('/search')"
-          >
-            <UIcon
-              name="i-lucide-search"
-              class="w-5 h-5 text-muted-foreground"
-            />
+          <LeafnoteSyncIndicator :status="syncStatus" class="mr-2" />
+          <button type="button" class="p-2 rounded-lg hover:bg-secondary transition-colors focus-ring"
+            aria-label="Search notes" @click="navigateTo('/search')">
+            <UIcon name="i-lucide-search" class="w-5 h-5 text-muted-foreground" />
           </button>
-          <button
-            type="button"
-            class="p-2 rounded-lg hover:bg-secondary transition-colors focus-ring"
-            aria-label="Settings"
-            @click="navigateTo('/settings')"
-          >
-            <UIcon
-              name="i-lucide-settings"
-              class="w-5 h-5 text-muted-foreground"
-            />
+          <button type="button" class="p-2 rounded-lg hover:bg-secondary transition-colors focus-ring"
+            aria-label="Settings" @click="navigateTo('/settings')">
+            <UIcon name="i-lucide-settings" class="w-5 h-5 text-muted-foreground" />
           </button>
         </div>
       </div>
 
-      <LeafnoteTagFilter
-        :selected-tag="selectedTag"
-        :available-tags="allTags"
-        @select="selectedTag = $event"
-      />
+      <LeafnoteTagFilter :selected-tag="selectedTag" :available-tags="allTags" @select="selectedTag = $event" />
     </header>
 
-    <div
-      v-if="notes.length > 0"
-      class="px-4 pt-3 pb-1"
-    >
-      <p class="text-xs text-muted-foreground text-center">
-        ← Swipe left on a note to delete
-      </p>
-    </div>
-
-    <main class="px-4 py-2 pb-24">
+    <main class="p-4 pb-24">
       <template v-if="filteredNotes.length === 0">
-        <div
-          v-if="selectedTag"
-          class="text-center py-16 animate-fade-in"
-        >
+        <div v-if="selectedTag" class="text-center py-16 animate-fade-in">
           <p class="text-muted-foreground">
             No notes with tag "{{ selectedTag }}"
           </p>
@@ -127,26 +94,13 @@ async function undoDelete() {
         <LeafnoteEmptyState v-else />
       </template>
 
-      <div
-        v-else
-        class="space-y-3"
-      >
-        <LeafnoteSwipeableNoteCard
-          v-for="(note, index) in filteredNotes"
-          :key="note.id"
-          :note="note"
-          :style="{ animationDelay: `${index * 0.05}s` }"
-          @open="openNote"
-          @delete="removeNote"
-        />
+      <div v-else class="space-y-3">
+        <LeafnoteSwipeableNoteCard v-for="(note, index) in filteredNotes" :key="note.id" :note="note"
+          :style="{ animationDelay: `${index * 0.05}s` }" @open="openNote" @delete="removeNote" />
       </div>
     </main>
 
-    <div
-      v-if="showUndo"
-      class="mobile-fixed-full fixed bottom-4 z-20 px-4"
-      role="status"
-    >
+    <div v-if="showUndo" class="mobile-fixed-full fixed bottom-4 z-20 px-4" role="status">
       <div class="flex items-center gap-3 rounded-lg border border-border bg-card p-3 shadow-lg">
         <div class="min-w-0 flex-1">
           <p class="text-sm font-medium text-foreground">
@@ -156,11 +110,9 @@ async function undoDelete() {
             This note was removed from this device.
           </p>
         </div>
-        <button
-          type="button"
+        <button type="button"
           class="rounded-md px-3 py-1.5 text-sm font-medium text-leaf-600 hover:bg-leaf-50 focus-ring"
-          @click="undoDelete"
-        >
+          @click="undoDelete">
           Undo
         </button>
       </div>

@@ -1,4 +1,7 @@
 <script setup lang="ts">
+import { getSignInEntryPoint } from '~/services/leafnote-entrypoints'
+
+const entryPoint = getSignInEntryPoint()
 const isLoading = shallowRef<'google' | 'apple' | null>(null)
 
 async function signIn(provider: 'google' | 'apple') {
@@ -31,10 +34,10 @@ async function signIn(provider: 'google' | 'apple') {
       </div>
 
       <h1 class="text-2xl font-semibold text-foreground mb-2 animate-fade-in">
-        Sign in to sync
+        {{ entryPoint.headline }}
       </h1>
       <p class="text-muted-foreground text-center mb-10 animate-fade-in max-w-[280px]">
-        Keep your notes safe and access them from any device
+        {{ entryPoint.description }}
       </p>
 
       <div class="w-full max-w-sm space-y-3 animate-slide-up">
@@ -66,7 +69,7 @@ async function signIn(provider: 'google' | 'apple') {
           name="i-lucide-lock"
           class="w-4 h-4"
         />
-        <span>Your notes are private and stored securely</span>
+        <span>{{ entryPoint.footer }}</span>
       </div>
     </div>
   </div>

@@ -1,4 +1,8 @@
 <script setup lang="ts">
+import { getWelcomeEntryPoint } from '~/services/leafnote-entrypoints'
+
+const entryPoint = getWelcomeEntryPoint()
+
 function go(path: string) {
   navigateTo(path)
 }
@@ -12,19 +16,19 @@ function go(path: string) {
       </div>
 
       <h1 class="text-2xl font-semibold text-foreground mb-2 animate-fade-in">
-        Leafnote
+        {{ entryPoint.headline }}
       </h1>
       <p class="text-muted-foreground text-center mb-10 animate-fade-in max-w-[280px]">
-        A calm, private space for your thoughts. Simple and distraction-free.
+        {{ entryPoint.description }}
       </p>
 
       <div class="w-full max-w-sm space-y-3 animate-slide-up">
         <button
           type="button"
           class="w-full h-12 text-base font-medium rounded-lg bg-primary text-primary-foreground inline-flex items-center justify-center hover:bg-primary/90 transition-colors focus-ring"
-          @click="go('/notes')"
+          @click="go(entryPoint.primaryAction.route)"
         >
-          Get Started
+          {{ entryPoint.primaryAction.label }}
           <UIcon
             name="i-lucide-arrow-right"
             class="w-4 h-4 ml-2"
@@ -34,9 +38,9 @@ function go(path: string) {
         <button
           type="button"
           class="w-full h-12 text-base font-medium rounded-lg border border-input bg-background hover:bg-secondary transition-colors focus-ring"
-          @click="go('/signin')"
+          @click="go(entryPoint.secondaryAction.route)"
         >
-          Sign in to sync
+          {{ entryPoint.secondaryAction.label }}
         </button>
       </div>
     </div>
@@ -47,7 +51,7 @@ function go(path: string) {
           name="i-lucide-lock"
           class="w-4 h-4"
         />
-        <span>Your notes stay on your device until you sign in</span>
+        <span>{{ entryPoint.footer }}</span>
       </div>
     </div>
   </div>

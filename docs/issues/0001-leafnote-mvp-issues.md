@@ -164,13 +164,13 @@ Keep the Welcome and Sign-in screens aligned with local-first behavior. Get Star
 
 ## Acceptance criteria
 
-- [ ] Welcome screen explains local-first use and optional Sync.
-- [ ] Get Started routes to Notes List without auth.
-- [ ] Sign in to sync routes to Sign-in screen.
-- [ ] Sign-in screen uses Google and Apple buttons only.
-- [ ] No email/password fields are present.
-- [ ] Copy avoids end-to-end encryption claims.
-- [ ] Local Notes remain available after navigating back from Sign-in.
+- [x] Welcome screen explains local-first use and optional Sync.
+- [x] Get Started routes to Notes List without auth.
+- [x] Sign in to sync routes to Sign-in screen.
+- [x] Sign-in screen uses Google and Apple buttons only.
+- [x] No email/password fields are present.
+- [x] Copy avoids end-to-end encryption claims.
+- [x] Local Notes remain available after navigating back from Sign-in.
 
 ## Blocked by
 
