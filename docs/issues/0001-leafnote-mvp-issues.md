@@ -111,14 +111,14 @@ Make Tags a local-first feature. User can attach default or custom Tags to Notes
 
 ## Acceptance criteria
 
-- [ ] Default Tags are available: personal, work, ideas, journal, recipes, books.
-- [ ] User can add a custom Tag in the Editor.
-- [ ] Custom Tags persist after refresh.
-- [ ] User can attach multiple Tags to a Note.
-- [ ] User can remove a Tag from a Note.
-- [ ] Notes List filters by selected Tag.
-- [ ] All filter button uses green background and white text when active.
-- [ ] No tag management screen, nested Tags, colors, rename, or delete workflow is added.
+- [x] Default Tags are available: personal, work, ideas, journal, recipes, books.
+- [x] User can add a custom Tag in the Editor.
+- [x] Custom Tags persist after refresh.
+- [x] User can attach multiple Tags to a Note.
+- [x] User can remove a Tag from a Note.
+- [x] Notes List filters by selected Tag.
+- [x] All filter button uses green background and white text when active.
+- [x] No tag management screen, nested Tags, colors, rename, or delete workflow is added.
 
 ## Blocked by
 
