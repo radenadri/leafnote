@@ -58,6 +58,50 @@ describe('Leafnote local Note store', () => {
     expect(await store.listNotes()).toEqual([])
   })
 
+  it('deletes a Note and records a Tombstone', async () => {
+    const store = createLeafnoteLocalStore({ dbName: 'leafnote-test' })
+
+    await store.saveNote({
+      id: 'deleted-note',
+      title: 'Delete me',
+      content: 'This note should be removed.',
+      tags: [],
+      createdAt: new Date('2026-01-01T08:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T08:00:00.000Z'),
+      syncStatus: 'local'
+    })
+
+    await store.deleteNote('deleted-note', new Date('2026-01-01T09:00:00.000Z'))
+
+    expect(await store.listNotes()).toEqual([])
+    expect(await store.listTombstones()).toEqual([
+      {
+        noteId: 'deleted-note',
+        deletedAt: new Date('2026-01-01T09:00:00.000Z')
+      }
+    ])
+  })
+
+  it('restores a deleted Note and removes its Tombstone', async () => {
+    const store = createLeafnoteLocalStore({ dbName: 'leafnote-test' })
+    const note = {
+      id: 'restored-note',
+      title: 'Restore me',
+      content: 'Undo should bring this back.',
+      tags: [],
+      createdAt: new Date('2026-01-01T08:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T09:00:00.000Z'),
+      syncStatus: 'local' as const
+    }
+
+    await store.saveNote(note)
+    await store.deleteNote(note.id, new Date('2026-01-01T10:00:00.000Z'))
+    await store.restoreNote(note)
+
+    expect(await store.listNotes()).toEqual([note])
+    expect(await store.listTombstones()).toEqual([])
+  })
+
   it('saves Notes whose tags come from Vue reactive state', async () => {
     const store = createLeafnoteLocalStore({ dbName: 'leafnote-test' })
     const tags = new Proxy(['journal'], {})

@@ -86,13 +86,13 @@ Complete the local Delete flow. User can swipe or trigger delete, confirm remova
 
 ## Acceptance criteria
 
-- [ ] Swipe-left delete affordance works on mobile.
-- [ ] Delete opens confirmation before removal.
-- [ ] Confirmed Delete removes the Note from the Notes List immediately.
-- [ ] Toast offers Undo for a short window.
-- [ ] Undo restores the Note in newest-first order.
-- [ ] Expired undo keeps Note deleted.
-- [ ] Delete writes a Tombstone record locally.
+- [x] Swipe-left delete affordance works on mobile.
+- [x] Delete opens confirmation before removal.
+- [x] Confirmed Delete removes the Note from the Notes List immediately.
+- [x] Toast offers Undo for a short window.
+- [x] Undo restores the Note in newest-first order.
+- [x] Expired undo keeps Note deleted.
+- [x] Delete writes a Tombstone record locally.
 
 ## Blocked by
 

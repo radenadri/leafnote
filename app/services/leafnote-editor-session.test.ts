@@ -5,6 +5,7 @@ import type { Note } from '~/types/note'
 
 function createMemoryStore(): LeafnoteLocalStore {
   const notes: Note[] = []
+  const tombstones: Array<{ noteId: string, deletedAt: Date }> = []
 
   return {
     async saveNote(note, options = {}) {
@@ -20,6 +21,27 @@ function createMemoryStore(): LeafnoteLocalStore {
 
     async listNotes() {
       return [...notes].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
+    },
+
+    async deleteNote(noteId, deletedAt = new Date()) {
+      const index = notes.findIndex(item => item.id === noteId)
+      if (index >= 0) notes.splice(index, 1)
+      tombstones.push({ noteId, deletedAt })
+    },
+
+    async restoreNote(note) {
+      const index = notes.findIndex(item => item.id === note.id)
+      if (index >= 0) {
+        notes[index] = note
+      } else {
+        notes.push(note)
+      }
+      const tombstoneIndex = tombstones.findIndex(item => item.noteId === note.id)
+      if (tombstoneIndex >= 0) tombstones.splice(tombstoneIndex, 1)
+    },
+
+    async listTombstones() {
+      return [...tombstones]
     },
 
     async seedNotesIfEmpty(seedNotes) {

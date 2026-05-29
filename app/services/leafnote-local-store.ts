@@ -1,7 +1,8 @@
 import type { Note } from '~/types/note'
 
-const DB_VERSION = 1
+const DB_VERSION = 2
 const NOTES_STORE = 'notes'
+const TOMBSTONES_STORE = 'tombstones'
 
 export interface LeafnoteLocalStoreOptions {
   dbName?: string
@@ -11,15 +12,28 @@ export interface SaveNoteOptions {
   allowEmpty?: boolean
 }
 
+export interface Tombstone {
+  noteId: string
+  deletedAt: Date
+}
+
 export interface LeafnoteLocalStore {
   saveNote: (note: Note, options?: SaveNoteOptions) => Promise<void>
   listNotes: () => Promise<Note[]>
+  deleteNote: (noteId: string, deletedAt?: Date) => Promise<void>
+  restoreNote: (note: Note) => Promise<void>
+  listTombstones: () => Promise<Tombstone[]>
   seedNotesIfEmpty: (notes: Note[]) => Promise<void>
 }
 
 interface StoredNote extends Omit<Note, 'createdAt' | 'updatedAt'> {
   createdAt: string
   updatedAt: string
+}
+
+interface StoredTombstone {
+  noteId: string
+  deletedAt: string
 }
 
 export function createLeafnoteLocalStore(options: LeafnoteLocalStoreOptions = {}): LeafnoteLocalStore {
@@ -40,6 +54,26 @@ export function createLeafnoteLocalStore(options: LeafnoteLocalStoreOptions = {}
       db.close()
 
       return sortNotes(storedNotes.map(deserializeNote))
+    },
+
+    async deleteNote(noteId, deletedAt = new Date()) {
+      const db = await openDatabase(dbName)
+      await deleteNoteAndWriteTombstone(db, noteId, serializeTombstone({ noteId, deletedAt }))
+      db.close()
+    },
+
+    async restoreNote(note) {
+      const db = await openDatabase(dbName)
+      await restoreNoteAndRemoveTombstone(db, serializeNote(note))
+      db.close()
+    },
+
+    async listTombstones() {
+      const db = await openDatabase(dbName)
+      const storedTombstones = await readAllFromStore<StoredTombstone>(db, TOMBSTONES_STORE)
+      db.close()
+
+      return storedTombstones.map(deserializeTombstone)
     },
 
     async seedNotesIfEmpty(notes) {
@@ -70,6 +104,9 @@ function openDatabase(dbName: string) {
       if (!db.objectStoreNames.contains(NOTES_STORE)) {
         db.createObjectStore(NOTES_STORE, { keyPath: 'id' })
       }
+      if (!db.objectStoreNames.contains(TOMBSTONES_STORE)) {
+        db.createObjectStore(TOMBSTONES_STORE, { keyPath: 'noteId' })
+      }
     }
 
     request.onsuccess = () => resolve(request.result)
@@ -90,6 +127,46 @@ function writeManyToStore(db: IDBDatabase, storeName: string, values: StoredNote
       for (const value of values) {
         store.put(value)
       }
+    } catch (error) {
+      transaction.abort()
+      reject(error)
+      return
+    }
+
+    transaction.oncomplete = () => resolve()
+    transaction.onerror = () => reject(transaction.error)
+  })
+}
+
+function deleteNoteAndWriteTombstone(db: IDBDatabase, noteId: string, tombstone: StoredTombstone) {
+  return new Promise<void>((resolve, reject) => {
+    const transaction = db.transaction([NOTES_STORE, TOMBSTONES_STORE], 'readwrite')
+    const notesStore = transaction.objectStore(NOTES_STORE)
+    const tombstonesStore = transaction.objectStore(TOMBSTONES_STORE)
+
+    try {
+      notesStore.delete(noteId)
+      tombstonesStore.put(tombstone)
+    } catch (error) {
+      transaction.abort()
+      reject(error)
+      return
+    }
+
+    transaction.oncomplete = () => resolve()
+    transaction.onerror = () => reject(transaction.error)
+  })
+}
+
+function restoreNoteAndRemoveTombstone(db: IDBDatabase, note: StoredNote) {
+  return new Promise<void>((resolve, reject) => {
+    const transaction = db.transaction([NOTES_STORE, TOMBSTONES_STORE], 'readwrite')
+    const notesStore = transaction.objectStore(NOTES_STORE)
+    const tombstonesStore = transaction.objectStore(TOMBSTONES_STORE)
+
+    try {
+      notesStore.put(note)
+      tombstonesStore.delete(note.id)
     } catch (error) {
       transaction.abort()
       reject(error)
@@ -126,5 +203,19 @@ function deserializeNote(note: StoredNote): Note {
     ...note,
     createdAt: new Date(note.createdAt),
     updatedAt: new Date(note.updatedAt)
+  }
+}
+
+function serializeTombstone(tombstone: Tombstone): StoredTombstone {
+  return {
+    noteId: tombstone.noteId,
+    deletedAt: tombstone.deletedAt.toISOString()
+  }
+}
+
+function deserializeTombstone(tombstone: StoredTombstone): Tombstone {
+  return {
+    noteId: tombstone.noteId,
+    deletedAt: new Date(tombstone.deletedAt)
   }
 }

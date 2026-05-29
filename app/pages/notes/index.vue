@@ -7,6 +7,9 @@ const { notes, allTags, loadNotes, loadCustomTags, deleteNote, restoreNote } = u
 
 const syncStatus = shallowRef<LeafnoteStatus>('local-only')
 const selectedTag = shallowRef<string | null>(null)
+const recentlyDeletedNote = ref<Note | null>(null)
+const showUndo = ref(false)
+let undoTimer: ReturnType<typeof setTimeout> | undefined
 
 onMounted(async () => {
   await loadNotes()
@@ -26,17 +29,31 @@ function openNote(note: Note) {
   navigateTo(`/notes/${note.id}`)
 }
 
-function removeNote(note: Note) {
-  deleteNote(note)
+async function removeNote(note: Note) {
+  recentlyDeletedNote.value = note
+  showUndo.value = true
+  await deleteNote(note)
+  if (undoTimer) clearTimeout(undoTimer)
+  undoTimer = setTimeout(() => {
+    recentlyDeletedNote.value = null
+    showUndo.value = false
+  }, 8000)
+
   toast.add({
     title: 'Note deleted',
-    actions: [{
-      label: 'Undo',
-      color: 'neutral',
-      variant: 'outline',
-      onClick: () => restoreNote(note)
-    }]
+    description: 'This note was removed from this device.',
+    duration: 8000
   })
+}
+
+async function undoDelete() {
+  if (!recentlyDeletedNote.value) return
+
+  const note = recentlyDeletedNote.value
+  recentlyDeletedNote.value = null
+  showUndo.value = false
+  if (undoTimer) clearTimeout(undoTimer)
+  await restoreNote(note)
 }
 </script>
 
@@ -124,6 +141,30 @@ function removeNote(note: Note) {
         />
       </div>
     </main>
+
+    <div
+      v-if="showUndo"
+      class="mobile-fixed-full fixed bottom-4 z-20 px-4"
+      role="status"
+    >
+      <div class="flex items-center gap-3 rounded-lg border border-border bg-card p-3 shadow-lg">
+        <div class="min-w-0 flex-1">
+          <p class="text-sm font-medium text-foreground">
+            Note deleted
+          </p>
+          <p class="text-xs text-muted-foreground">
+            This note was removed from this device.
+          </p>
+        </div>
+        <button
+          type="button"
+          class="rounded-md px-3 py-1.5 text-sm font-medium text-leaf-600 hover:bg-leaf-50 focus-ring"
+          @click="undoDelete"
+        >
+          Undo
+        </button>
+      </div>
+    </div>
 
     <LeafnoteFloatingActionButton @click="navigateTo('/notes/new')" />
   </div>

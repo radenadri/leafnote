@@ -52,14 +52,14 @@ export function useLeafnote() {
     return notes.value.find(note => note.id === id)
   }
 
-  function deleteNote(note: Note) {
-    notes.value = notes.value.filter(item => item.id !== note.id)
+  async function deleteNote(note: Note) {
+    await localStore.deleteNote(note.id)
+    notes.value = await localStore.listNotes()
   }
 
-  function restoreNote(note: Note) {
-    notes.value = [...notes.value, note].sort(
-      (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()
-    )
+  async function restoreNote(note: Note) {
+    await localStore.restoreNote(note)
+    notes.value = await localStore.listNotes()
   }
 
   return {
