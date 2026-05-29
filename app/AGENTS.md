@@ -2,8 +2,8 @@
 
 ## Package Identity
 
-`app/` contains the Nuxt 4 frontend for Leafnote. It owns routes, Vue components, local state facade, mock data, types, and styling.
-Primary tech: Vue 3 SFCs, Nuxt file routing, Nuxt UI, Tailwind CSS 4, TypeScript.
+`app/` contains the Nuxt 4 frontend for Leafnote. It owns routes, Vue components, the IndexedDB-backed local state facade, first-run seed data, domain types, and styling.
+Primary tech: Vue 3 SFCs, Nuxt file routing, Nuxt UI, Tailwind CSS 4, TypeScript, Vitest, fake-indexeddb.
 
 ## Setup & Run
 
@@ -11,18 +11,19 @@ From repo root:
 
 ```bash
 pnpm dev
+pnpm test
 pnpm typecheck
 pnpm lint
 pnpm build
 ```
 
-No database setup exists yet. Notes currently come from `app/data/mockNotes.ts`; custom tags use browser `localStorage`.
+Notes persist in browser IndexedDB through `app/services/leafnote-local-store.ts`. `app/data/mockNotes.ts` is seed data only when the local Notes store is empty. Tombstones and Outbox entries also live in IndexedDB. Custom Tag names currently also use browser `localStorage`; Tags attached to Notes persist with Notes.
 
 ## Patterns & Conventions
 
 - Use `<script setup lang="ts">` for all Vue files.
 - Keep route-level orchestration in `app/pages/**`; move reusable UI to `app/components/leafnote/**`.
-- Use `useLeafnote()` as app state facade. Do not read/write `mockNotes` directly from pages.
+- Use `useLeafnote()` as app state facade. Do not read/write IndexedDB, `localStorage`, or `mockNotes` directly from pages.
 - For route navigation, existing pattern is `navigateTo('/path')` in page/component handlers.
 - For icons, use local installed collections: `i-lucide-*` or `i-simple-icons-*`.
 - For overlays/toasts, use Nuxt UI patterns already in app:
@@ -43,7 +44,10 @@ No database setup exists yet. Notes currently come from `app/data/mockNotes.ts`;
 - State facade: `app/composables/useLeafnote.ts`
 - Time helper: `app/composables/formatTimeAgo.ts`
 - Domain types/constants: `app/types/note.ts`
-- Mock notes: `app/data/mockNotes.ts`
+- Local persistence: `app/services/leafnote-local-store.ts`
+- Editor session/autosave tests seam: `app/services/leafnote-editor-session.ts`
+- Local-first regression tests: `app/services/leafnote-local-regression.test.ts`
+- Seed notes: `app/data/mockNotes.ts`
 - Notes list route: `app/pages/notes/index.vue`
 - Editor route: `app/pages/notes/[id].vue`
 - Search route: `app/pages/search.vue`
@@ -55,15 +59,15 @@ No database setup exists yet. Notes currently come from `app/data/mockNotes.ts`;
 ```bash
 find app/pages app/components/leafnote -type f | sort
 rg -n "defineProps|defineEmits|computed\(|watch\(|onMounted" app
-rg -n "useLeafnote\(|mockNotes|localStorage|CUSTOM_TAGS_KEY" app
+rg -n "useLeafnote\(|createLeafnoteLocalStore|indexedDB|Outbox|Tombstone|localStorage|CUSTOM_TAGS_KEY" app
 rg -n "UModal|USlideover|useToast|USeparator|UIcon" app
 rg -n "bg-leaf|text-sync|safe-top|safe-bottom|focus-ring" app
 ```
 
 ## Common Gotchas
 
-- `useLeafnote()` currently does not persist Notes. Do not assume IndexedDB exists yet.
-- Editor refs in `app/pages/notes/[id].vue` currently do not save back to state.
+- `useLeafnote()` persists Notes through IndexedDB; keep pages behind this facade.
+- Editor refs in `app/pages/notes/[id].vue` save locally after 3 seconds idle and on blur/back/unmount.
 - Use `LeafnoteStatus` values from `app/services/leafnote-status.ts`; avoid showing signed-out local use as Offline.
 - `app/app.config.ts` has `i-ph-*` icon aliases, but package deps include lucide/simple-icons only.
 - `.nuxt/` and `.output/` are generated. Do not edit them.
@@ -71,5 +75,5 @@ rg -n "bg-leaf|text-sync|safe-top|safe-bottom|focus-ring" app
 ## Pre-PR Checks
 
 ```bash
-pnpm typecheck && pnpm lint && pnpm build
+pnpm test && pnpm typecheck && pnpm lint && pnpm build
 ```

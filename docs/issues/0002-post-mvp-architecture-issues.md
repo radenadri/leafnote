@@ -19,12 +19,12 @@ Update Leafnote docs so future maintainers and agents see the completed Local-fi
 
 ## Acceptance criteria
 
-- [ ] `ARCHITECTURE.md` reflects IndexedDB-backed Notes, Tombstones, Outbox, Search, Tags, Settings, Welcome, and Sign-in as implemented after Issues #1-#10.
-- [ ] `app/AGENTS.md` no longer says Notes come only from mock data or that IndexedDB/Tombstones/Outbox are absent.
-- [ ] `README.md` reflects Leafnote product/runtime setup instead of stale starter/prototype claims.
-- [ ] `.github/workflows/ci.yml` runs local-first regression tests in addition to lint/typecheck.
-- [ ] Definition of Done includes `pnpm test`, `pnpm typecheck`, `pnpm lint`, and `pnpm build` where appropriate.
-- [ ] Docs continue to avoid backend, real Sync, real OAuth, and end-to-end encryption claims.
+- [x] `ARCHITECTURE.md` reflects IndexedDB-backed Notes, Tombstones, Outbox, Search, Tags, Settings, Welcome, and Sign-in as implemented after Issues #1-#10.
+- [x] `app/AGENTS.md` no longer says Notes come only from mock data or that IndexedDB/Tombstones/Outbox are absent.
+- [x] `README.md` reflects Leafnote product/runtime setup instead of stale starter/prototype claims.
+- [x] `.github/workflows/ci.yml` runs local-first regression tests in addition to lint/typecheck.
+- [x] Definition of Done includes `pnpm test`, `pnpm typecheck`, `pnpm lint`, and `pnpm build` where appropriate.
+- [x] Docs continue to avoid backend, real Sync, real OAuth, and end-to-end encryption claims.
 
 ## Blocked by
 
