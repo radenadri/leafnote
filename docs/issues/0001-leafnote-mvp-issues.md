@@ -213,13 +213,13 @@ Add the local Outbox store and enqueue local create, update, and delete operatio
 
 ## Acceptance criteria
 
-- [ ] IndexedDB has an Outbox store.
-- [ ] Create Note enqueues a create/update operation after local save succeeds.
-- [ ] Edit Note enqueues an update operation after local save succeeds.
-- [ ] Delete Note enqueues a delete operation after Tombstone write succeeds.
-- [ ] Outbox entries preserve local write order.
-- [ ] Failed or unprocessed Outbox entries remain local.
-- [ ] No backend sync request is made in this local-only slice.
+- [x] IndexedDB has an Outbox store.
+- [x] Create Note enqueues a create/update operation after local save succeeds.
+- [x] Edit Note enqueues an update operation after local save succeeds.
+- [x] Delete Note enqueues a delete operation after Tombstone write succeeds.
+- [x] Outbox entries preserve local write order.
+- [x] Failed or unprocessed Outbox entries remain local.
+- [x] No backend sync request is made in this local-only slice.
 
 ## Blocked by
 

@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { createLeafnoteEditorSession } from './leafnote-editor-session'
-import type { LeafnoteLocalStore } from './leafnote-local-store'
+import type { LeafnoteLocalStore, OutboxEntry } from './leafnote-local-store'
 import type { Note } from '~/types/note'
 
 function createMemoryStore(): LeafnoteLocalStore {
   const notes: Note[] = []
   const tombstones: Array<{ noteId: string, deletedAt: Date }> = []
+  const outboxEntries: OutboxEntry[] = []
 
   return {
     async saveNote(note, options = {}) {
@@ -17,6 +18,14 @@ function createMemoryStore(): LeafnoteLocalStore {
       } else {
         notes.push(note)
       }
+      outboxEntries.push({
+        id: `${outboxEntries.length + 1}`,
+        sequence: outboxEntries.length + 1,
+        operation: 'upsertNote',
+        noteId: note.id,
+        createdAt: new Date(),
+        processed: false
+      })
     },
 
     async listNotes() {
@@ -27,6 +36,14 @@ function createMemoryStore(): LeafnoteLocalStore {
       const index = notes.findIndex(item => item.id === noteId)
       if (index >= 0) notes.splice(index, 1)
       tombstones.push({ noteId, deletedAt })
+      outboxEntries.push({
+        id: `${outboxEntries.length + 1}`,
+        sequence: outboxEntries.length + 1,
+        operation: 'deleteNote',
+        noteId,
+        createdAt: new Date(),
+        processed: false
+      })
     },
 
     async restoreNote(note) {
@@ -42,6 +59,10 @@ function createMemoryStore(): LeafnoteLocalStore {
 
     async listTombstones() {
       return [...tombstones]
+    },
+
+    async listOutboxEntries() {
+      return [...outboxEntries]
     },
 
     async seedNotesIfEmpty(seedNotes) {

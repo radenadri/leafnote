@@ -1,8 +1,9 @@
 import type { Note } from '~/types/note'
 
-const DB_VERSION = 2
+const DB_VERSION = 3
 const NOTES_STORE = 'notes'
 const TOMBSTONES_STORE = 'tombstones'
+const OUTBOX_STORE = 'outbox'
 
 export interface LeafnoteLocalStoreOptions {
   dbName?: string
@@ -12,9 +13,20 @@ export interface SaveNoteOptions {
   allowEmpty?: boolean
 }
 
+export type OutboxOperation = 'upsertNote' | 'deleteNote'
+
 export interface Tombstone {
   noteId: string
   deletedAt: Date
+}
+
+export interface OutboxEntry {
+  id: string
+  sequence: number
+  operation: OutboxOperation
+  noteId: string
+  createdAt: Date
+  processed: boolean
 }
 
 export interface LeafnoteLocalStore {
@@ -23,6 +35,7 @@ export interface LeafnoteLocalStore {
   deleteNote: (noteId: string, deletedAt?: Date) => Promise<void>
   restoreNote: (note: Note) => Promise<void>
   listTombstones: () => Promise<Tombstone[]>
+  listOutboxEntries: () => Promise<OutboxEntry[]>
   seedNotesIfEmpty: (notes: Note[]) => Promise<void>
 }
 
@@ -36,6 +49,10 @@ interface StoredTombstone {
   deletedAt: string
 }
 
+interface StoredOutboxEntry extends Omit<OutboxEntry, 'createdAt'> {
+  createdAt: string
+}
+
 export function createLeafnoteLocalStore(options: LeafnoteLocalStoreOptions = {}): LeafnoteLocalStore {
   const dbName = options.dbName ?? 'leafnote'
 
@@ -44,7 +61,7 @@ export function createLeafnoteLocalStore(options: LeafnoteLocalStoreOptions = {}
       if (!saveOptions.allowEmpty && !hasNoteContent(note)) return
 
       const db = await openDatabase(dbName)
-      await writeToStore(db, NOTES_STORE, serializeNote(note))
+      await saveNoteAndEnqueueOutbox(db, serializeNote(note), serializeOutboxEntry(createOutboxEntry('upsertNote', note.id)))
       db.close()
     },
 
@@ -58,7 +75,12 @@ export function createLeafnoteLocalStore(options: LeafnoteLocalStoreOptions = {}
 
     async deleteNote(noteId, deletedAt = new Date()) {
       const db = await openDatabase(dbName)
-      await deleteNoteAndWriteTombstone(db, noteId, serializeTombstone({ noteId, deletedAt }))
+      await deleteNoteAndWriteTombstone(
+        db,
+        noteId,
+        serializeTombstone({ noteId, deletedAt }),
+        serializeOutboxEntry(createOutboxEntry('deleteNote', noteId))
+      )
       db.close()
     },
 
@@ -74,6 +96,14 @@ export function createLeafnoteLocalStore(options: LeafnoteLocalStoreOptions = {}
       db.close()
 
       return storedTombstones.map(deserializeTombstone)
+    },
+
+    async listOutboxEntries() {
+      const db = await openDatabase(dbName)
+      const storedOutboxEntries = await readAllFromStore<StoredOutboxEntry>(db, OUTBOX_STORE)
+      db.close()
+
+      return storedOutboxEntries.map(deserializeOutboxEntry).sort((a, b) => a.sequence - b.sequence)
     },
 
     async seedNotesIfEmpty(notes) {
@@ -107,15 +137,14 @@ function openDatabase(dbName: string) {
       if (!db.objectStoreNames.contains(TOMBSTONES_STORE)) {
         db.createObjectStore(TOMBSTONES_STORE, { keyPath: 'noteId' })
       }
+      if (!db.objectStoreNames.contains(OUTBOX_STORE)) {
+        db.createObjectStore(OUTBOX_STORE, { keyPath: 'id' })
+      }
     }
 
     request.onsuccess = () => resolve(request.result)
     request.onerror = () => reject(request.error)
   })
-}
-
-function writeToStore(db: IDBDatabase, storeName: string, value: StoredNote) {
-  return writeManyToStore(db, storeName, [value])
 }
 
 function writeManyToStore(db: IDBDatabase, storeName: string, values: StoredNote[]) {
@@ -138,15 +167,42 @@ function writeManyToStore(db: IDBDatabase, storeName: string, values: StoredNote
   })
 }
 
-function deleteNoteAndWriteTombstone(db: IDBDatabase, noteId: string, tombstone: StoredTombstone) {
+function saveNoteAndEnqueueOutbox(db: IDBDatabase, note: StoredNote, outboxEntry: StoredOutboxEntry) {
   return new Promise<void>((resolve, reject) => {
-    const transaction = db.transaction([NOTES_STORE, TOMBSTONES_STORE], 'readwrite')
+    const transaction = db.transaction([NOTES_STORE, OUTBOX_STORE], 'readwrite')
+    const notesStore = transaction.objectStore(NOTES_STORE)
+    const outboxStore = transaction.objectStore(OUTBOX_STORE)
+
+    try {
+      notesStore.put(note)
+      outboxStore.put(outboxEntry)
+    } catch (error) {
+      transaction.abort()
+      reject(error)
+      return
+    }
+
+    transaction.oncomplete = () => resolve()
+    transaction.onerror = () => reject(transaction.error)
+  })
+}
+
+function deleteNoteAndWriteTombstone(
+  db: IDBDatabase,
+  noteId: string,
+  tombstone: StoredTombstone,
+  outboxEntry: StoredOutboxEntry
+) {
+  return new Promise<void>((resolve, reject) => {
+    const transaction = db.transaction([NOTES_STORE, TOMBSTONES_STORE, OUTBOX_STORE], 'readwrite')
     const notesStore = transaction.objectStore(NOTES_STORE)
     const tombstonesStore = transaction.objectStore(TOMBSTONES_STORE)
+    const outboxStore = transaction.objectStore(OUTBOX_STORE)
 
     try {
       notesStore.delete(noteId)
       tombstonesStore.put(tombstone)
+      outboxStore.put(outboxEntry)
     } catch (error) {
       transaction.abort()
       reject(error)
@@ -206,6 +262,19 @@ function deserializeNote(note: StoredNote): Note {
   }
 }
 
+function createOutboxEntry(operation: OutboxOperation, noteId: string): OutboxEntry {
+  const createdAt = new Date()
+  const sequence = createdAt.getTime() * 1000 + Math.floor(performance.now() * 1000)
+  return {
+    id: `${sequence}-${crypto.randomUUID()}`,
+    sequence,
+    operation,
+    noteId,
+    createdAt,
+    processed: false
+  }
+}
+
 function serializeTombstone(tombstone: Tombstone): StoredTombstone {
   return {
     noteId: tombstone.noteId,
@@ -217,5 +286,19 @@ function deserializeTombstone(tombstone: StoredTombstone): Tombstone {
   return {
     noteId: tombstone.noteId,
     deletedAt: new Date(tombstone.deletedAt)
+  }
+}
+
+function serializeOutboxEntry(entry: OutboxEntry): StoredOutboxEntry {
+  return {
+    ...entry,
+    createdAt: entry.createdAt.toISOString()
+  }
+}
+
+function deserializeOutboxEntry(entry: StoredOutboxEntry): OutboxEntry {
+  return {
+    ...entry,
+    createdAt: new Date(entry.createdAt)
   }
 }

@@ -13,7 +13,7 @@ describe('Leafnote local Note store', () => {
     })
   })
 
-  it('persists a Note and loads it after reopening the store', async () => {
+  it('persists a Note and enqueues a local Outbox update', async () => {
     const firstStore = createLeafnoteLocalStore({ dbName: 'leafnote-test' })
 
     await firstStore.saveNote({
@@ -38,6 +38,13 @@ describe('Leafnote local Note store', () => {
         createdAt: new Date('2026-01-01T08:00:00.000Z'),
         updatedAt: new Date('2026-01-01T08:05:00.000Z'),
         syncStatus: 'local'
+      }
+    ])
+    expect(await secondStore.listOutboxEntries()).toMatchObject([
+      {
+        operation: 'upsertNote',
+        noteId: 'note-1',
+        processed: false
       }
     ])
   })
@@ -79,6 +86,10 @@ describe('Leafnote local Note store', () => {
         noteId: 'deleted-note',
         deletedAt: new Date('2026-01-01T09:00:00.000Z')
       }
+    ])
+    expect(await store.listOutboxEntries()).toMatchObject([
+      { operation: 'upsertNote', noteId: 'deleted-note', processed: false },
+      { operation: 'deleteNote', noteId: 'deleted-note', processed: false }
     ])
   })
 
@@ -126,6 +137,37 @@ describe('Leafnote local Note store', () => {
         updatedAt: new Date('2026-01-01T08:00:00.000Z'),
         syncStatus: 'local'
       }
+    ])
+  })
+
+  it('preserves local Outbox write order after reopening the store', async () => {
+    const store = createLeafnoteLocalStore({ dbName: 'leafnote-test' })
+
+    await store.saveNote({
+      id: 'ordered-note',
+      title: 'First write',
+      content: 'Created locally.',
+      tags: [],
+      createdAt: new Date('2026-01-01T08:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T08:00:00.000Z'),
+      syncStatus: 'local'
+    })
+    await store.saveNote({
+      id: 'ordered-note',
+      title: 'Second write',
+      content: 'Edited locally.',
+      tags: [],
+      createdAt: new Date('2026-01-01T08:00:00.000Z'),
+      updatedAt: new Date('2026-01-01T09:00:00.000Z'),
+      syncStatus: 'local'
+    })
+    await store.deleteNote('ordered-note', new Date('2026-01-01T10:00:00.000Z'))
+
+    const reopenedStore = createLeafnoteLocalStore({ dbName: 'leafnote-test' })
+    expect((await reopenedStore.listOutboxEntries()).map(entry => entry.operation)).toEqual([
+      'upsertNote',
+      'upsertNote',
+      'deleteNote'
     ])
   })
 
