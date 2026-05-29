@@ -189,12 +189,12 @@ Make Settings describe the current local-only state correctly. A Personal user c
 
 ## Acceptance criteria
 
-- [ ] Settings shows Sign in CTA when signed out.
-- [ ] Sync status does not label signed-out local use as broken.
-- [ ] App version is shown.
-- [ ] Privacy copy says Notes are private and stored securely.
-- [ ] Copy explains local Notes remain on this device.
-- [ ] No theme, export, wipe data, profile, or advanced preferences are added.
+- [x] Settings shows Sign in CTA when signed out.
+- [x] Sync status does not label signed-out local use as broken.
+- [x] App version is shown.
+- [x] Privacy copy says Notes are private and stored securely.
+- [x] Copy explains local Notes remain on this device.
+- [x] No theme, export, wipe data, profile, or advanced preferences are added.
 
 ## Blocked by
 

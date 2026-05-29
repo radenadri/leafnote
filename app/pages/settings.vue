@@ -1,5 +1,8 @@
 <script setup lang="ts">
+import { getSettingsScreen } from '~/services/leafnote-settings'
+
 const isSignedIn = shallowRef(false)
+const settingsScreen = computed(() => getSettingsScreen({ signedIn: isSignedIn.value }))
 
 interface SettingsItem {
   icon: string
@@ -78,23 +81,23 @@ function settingsItemClass(item: SettingsItem) {
               />
               <div>
                 <p class="text-sm font-medium text-foreground mb-1">
-                  Sync your notes
+                  {{ settingsScreen.account.title }}
                 </p>
                 <p class="text-sm text-muted-foreground">
-                  Sign in to back up your notes and access them on any device.
+                  {{ settingsScreen.account.description }}
                 </p>
               </div>
             </div>
             <button
               type="button"
               class="w-full h-10 rounded-lg bg-primary text-primary-foreground inline-flex items-center justify-center hover:bg-primary/90 transition-colors focus-ring"
-              @click="navigateTo('/signin')"
+              @click="navigateTo(settingsScreen.account.action?.route ?? '/signin')"
             >
               <UIcon
                 name="i-lucide-log-in"
                 class="w-4 h-4 mr-2"
               />
-              Sign in to sync
+              {{ settingsScreen.account.action?.label }}
             </button>
           </div>
         </div>
@@ -112,7 +115,7 @@ function settingsItemClass(item: SettingsItem) {
             class="w-5 h-5 text-muted-foreground"
           />
           <span class="flex-1 text-foreground">Sync status</span>
-          <LeafnoteSyncIndicator :status="isSignedIn ? 'synced' : 'local-only'" />
+          <LeafnoteSyncIndicator :status="settingsScreen.syncStatus" />
         </div>
         <div class="w-full flex items-center gap-3 px-4 py-3 transition-colors">
           <UIcon
@@ -120,7 +123,7 @@ function settingsItemClass(item: SettingsItem) {
             class="w-5 h-5 text-muted-foreground"
           />
           <span class="flex-1 text-left text-foreground">Version</span>
-          <span class="text-sm text-muted-foreground">1.0.0</span>
+          <span class="text-sm text-muted-foreground">{{ settingsScreen.version }}</span>
         </div>
       </section>
 
@@ -138,12 +141,10 @@ function settingsItemClass(item: SettingsItem) {
             />
             <div>
               <p class="text-sm font-medium text-foreground mb-1">
-                Your notes are private
+                {{ settingsScreen.privacy.title }}
               </p>
               <p class="text-sm text-muted-foreground">
-                {{ isSignedIn
-                  ? 'Your notes are private and stored securely. Only you can access them.'
-                  : 'Notes are stored locally on this device. Sign in to back them up securely.' }}
+                {{ settingsScreen.privacy.description }}
               </p>
             </div>
           </div>
