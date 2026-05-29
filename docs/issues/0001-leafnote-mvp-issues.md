@@ -240,14 +240,14 @@ Add tests that prove the local-first MVP behavior works end-to-end: local persis
 
 ## Acceptance criteria
 
-- [ ] Test proves a Note persists across reload using local storage layer.
-- [ ] Test proves autosave after 3 seconds idle.
-- [ ] Test proves blur/back save behavior.
-- [ ] Test proves empty new Note is discarded.
-- [ ] Test proves Delete confirmation and Undo restore behavior.
-- [ ] Test proves Tombstone is written after Delete.
-- [ ] Test proves Tag filtering works.
-- [ ] Test proves Search matches title/body only.
+- [x] Test proves a Note persists across reload using local storage layer.
+- [x] Test proves autosave after 3 seconds idle.
+- [x] Test proves blur/back save behavior.
+- [x] Test proves empty new Note is discarded.
+- [x] Test proves Delete confirmation and Undo restore behavior.
+- [x] Test proves Tombstone is written after Delete.
+- [x] Test proves Tag filtering works.
+- [x] Test proves Search matches title/body only.
 
 ## Blocked by
 
