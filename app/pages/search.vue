@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { searchNotes } from '~/services/leafnote-search'
 import type { Note } from '~/types/note'
 
 const { notes, loadNotes } = useLeafnote()
@@ -6,14 +7,7 @@ const query = shallowRef('')
 
 onMounted(loadNotes)
 
-const filteredNotes = computed(() => {
-  const value = query.value.trim().toLowerCase()
-  if (!value) return []
-
-  return notes.value.filter(note =>
-    note.title.toLowerCase().includes(value) || note.content.toLowerCase().includes(value)
-  )
-})
+const filteredNotes = computed(() => searchNotes(notes.value, query.value))
 
 function openNote(note: Note) {
   navigateTo(`/notes/${note.id}`)

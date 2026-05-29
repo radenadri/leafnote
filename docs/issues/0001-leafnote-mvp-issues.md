@@ -138,14 +138,14 @@ Make Search read from local Notes and filter instantly by title and body only. S
 
 ## Acceptance criteria
 
-- [ ] Search input filters Notes from IndexedDB-backed state.
-- [ ] Search matches title and body only.
-- [ ] Results update as user types.
-- [ ] Blank query shows the Search prompt.
-- [ ] No result state appears when no Notes match.
-- [ ] Result count is shown.
-- [ ] Result cards open the selected Note.
-- [ ] Tags are not searched in MVP.
+- [x] Search input filters Notes from IndexedDB-backed state.
+- [x] Search matches title and body only.
+- [x] Results update as user types.
+- [x] Blank query shows the Search prompt.
+- [x] No result state appears when no Notes match.
+- [x] Result count is shown.
+- [x] Result cards open the selected Note.
+- [x] Tags are not searched in MVP.
 
 ## Blocked by
 
