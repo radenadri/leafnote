@@ -76,14 +76,14 @@ Move Note draft creation, editing, autosave, explicit Save, timestamp handling, 
 
 ## Acceptance criteria
 
-- [ ] The Editor route no longer owns autosave timer logic, Note timestamp creation, or empty Note persistence rules.
-- [ ] Opening `/notes/new` still creates a stable client-generated Note ID only for the Editor session.
-- [ ] Autosave still writes after 3 seconds idle.
-- [ ] Blur/back navigation still saves immediately.
-- [ ] Empty new Notes are still discarded.
-- [ ] Existing Notes can still be cleared and remain until deleted.
-- [ ] Editor status still shows Local only/Saving/Saved accurately.
-- [ ] Regression tests exercise the same Note lifecycle seam used by the Editor route.
+- [x] The Editor route no longer owns autosave timer logic, Note timestamp creation, or empty Note persistence rules.
+- [x] Opening `/notes/new` still creates a stable client-generated Note ID only for the Editor session.
+- [x] Autosave still writes after 3 seconds idle.
+- [x] Blur/back navigation still saves immediately.
+- [x] Empty new Notes are still discarded.
+- [x] Existing Notes can still be cleared and remain until deleted.
+- [x] Editor status still shows Local only/Saving/Saved accurately.
+- [x] Regression tests exercise the same Note lifecycle seam used by the Editor route.
 
 ## Blocked by
 

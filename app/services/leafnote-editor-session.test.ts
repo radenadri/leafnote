@@ -113,6 +113,32 @@ describe('Leafnote Editor autosave', () => {
     session.dispose()
   })
 
+  it('exposes the draft state and Save status used by the Editor', async () => {
+    const store = createMemoryStore()
+    const session = createLeafnoteEditorSession({
+      store,
+      noteId: 'status-note-id',
+      now: () => new Date('2026-01-01T09:00:00.000Z')
+    })
+
+    expect(session.note.value).toMatchObject({
+      id: 'status-note-id',
+      title: '',
+      content: '',
+      tags: []
+    })
+    expect(session.status.value).toBe('local-only')
+
+    session.setTitle('Draft title')
+    expect(session.note.value.title).toBe('Draft title')
+    expect(session.status.value).toBe('saving')
+
+    await session.saveNow()
+    expect(session.status.value).toBe('saved')
+
+    session.dispose()
+  })
+
   it('saves immediately when the user exits the Editor', async () => {
     const store = createMemoryStore()
     const session = createLeafnoteEditorSession({

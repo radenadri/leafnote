@@ -1,79 +1,48 @@
 <script setup lang="ts">
-import type { LeafnoteStatus } from '~/services/leafnote-status'
-import type { Note } from '~/types/note'
+import { createLeafnoteEditorSession } from '~/services/leafnote-editor-session'
+import { createLeafnoteLocalStore } from '~/services/leafnote-local-store'
 
 const route = useRoute()
-const { allTags, loadNotes, loadCustomTags, addCustomTag, findNote, saveNote } = useLeafnote()
+const { allTags, loadNotes, loadCustomTags, addCustomTag, findNote } = useLeafnote()
+const localStore = createLeafnoteLocalStore()
 
 const id = computed(() => String(route.params.id))
-const isNewNote = computed(() => id.value === 'new')
-
-const title = shallowRef('')
-const content = shallowRef('')
-const tags = ref<string[]>([])
-const syncStatus = shallowRef<LeafnoteStatus>('local-only')
 const isTagSheetOpen = shallowRef(false)
-const noteId = shallowRef('')
-const createdAt = shallowRef(new Date())
-const existingNote = shallowRef<Note | undefined>()
-let saveTimer: ReturnType<typeof setTimeout> | undefined
+const session = shallowRef<ReturnType<typeof createLeafnoteEditorSession>>()
+
+const title = computed({
+  get: () => session.value?.note.value.title ?? '',
+  set: value => session.value?.setTitle(value)
+})
+const content = computed({
+  get: () => session.value?.note.value.content ?? '',
+  set: value => session.value?.setContent(value)
+})
+const tags = computed({
+  get: () => session.value?.note.value.tags ?? [],
+  set: value => session.value?.setTags(value)
+})
+const syncStatus = computed(() => session.value?.status.value ?? 'local-only')
 
 onMounted(async () => {
   await loadNotes()
   loadCustomTags()
 
-  if (!isNewNote.value) {
-    const note = findNote(id.value)
-    if (note) {
-      existingNote.value = note
-      noteId.value = note.id
-      createdAt.value = note.createdAt
-      title.value = note.title
-      content.value = note.content
-      tags.value = [...note.tags]
-    }
-  } else {
-    noteId.value = crypto.randomUUID()
-    createdAt.value = new Date()
-  }
+  const existingNote = id.value === 'new' ? undefined : findNote(id.value)
+  session.value = createLeafnoteEditorSession({
+    store: localStore,
+    noteId: id.value === 'new' ? crypto.randomUUID() : id.value,
+    initialNote: existingNote
+  })
 })
-
-watch([title, content, tags], () => {
-  scheduleSave()
-}, { deep: true })
 
 onBeforeUnmount(() => {
-  void saveNow()
+  void session.value?.saveNow()
+  session.value?.dispose()
 })
 
-function scheduleSave() {
-  if (!noteId.value) return
-  if (saveTimer) clearTimeout(saveTimer)
-
-  syncStatus.value = 'saving'
-  saveTimer = setTimeout(() => {
-    void saveNow()
-  }, 3000)
-}
-
 async function saveNow() {
-  if (!noteId.value) return
-  if (saveTimer) {
-    clearTimeout(saveTimer)
-    saveTimer = undefined
-  }
-
-  await saveNote({
-    id: noteId.value,
-    title: title.value,
-    content: content.value,
-    tags: tags.value,
-    createdAt: createdAt.value,
-    updatedAt: new Date(),
-    syncStatus: 'local'
-  }, { allowEmpty: Boolean(existingNote.value) })
-
-  syncStatus.value = 'saved'
+  await session.value?.saveNow()
 }
 
 async function goBack() {
