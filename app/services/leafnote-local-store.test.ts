@@ -1,6 +1,20 @@
 import { beforeEach, describe, expect, it } from 'vitest'
 import { indexedDB } from 'fake-indexeddb'
 import { createLeafnoteLocalStore } from './leafnote-local-store'
+import type { Note } from '../types/note'
+
+function createNote(overrides: Partial<Note> = {}): Note {
+  return {
+    id: 'note-1',
+    title: 'Morning Thoughts',
+    content: 'Quiet mind, better ideas.',
+    tags: [],
+    createdAt: new Date('2026-01-01T08:00:00.000Z'),
+    updatedAt: new Date('2026-01-01T08:00:00.000Z'),
+    syncStatus: 'local',
+    ...overrides
+  }
+}
 
 describe('Leafnote local Note store', () => {
   beforeEach(async () => {
@@ -143,32 +157,29 @@ describe('Leafnote local Note store', () => {
   it('preserves local Outbox write order after reopening the store', async () => {
     const store = createLeafnoteLocalStore({ dbName: 'leafnote-test' })
 
-    await store.saveNote({
+    await store.saveNote(createNote({
       id: 'ordered-note',
       title: 'First write',
       content: 'Created locally.',
-      tags: [],
-      createdAt: new Date('2026-01-01T08:00:00.000Z'),
-      updatedAt: new Date('2026-01-01T08:00:00.000Z'),
-      syncStatus: 'local'
-    })
-    await store.saveNote({
+      updatedAt: new Date('2026-01-01T08:00:00.000Z')
+    }))
+    await store.saveNote(createNote({
       id: 'ordered-note',
       title: 'Second write',
       content: 'Edited locally.',
-      tags: [],
-      createdAt: new Date('2026-01-01T08:00:00.000Z'),
-      updatedAt: new Date('2026-01-01T09:00:00.000Z'),
-      syncStatus: 'local'
-    })
+      updatedAt: new Date('2026-01-01T09:00:00.000Z')
+    }))
     await store.deleteNote('ordered-note', new Date('2026-01-01T10:00:00.000Z'))
 
     const reopenedStore = createLeafnoteLocalStore({ dbName: 'leafnote-test' })
-    expect((await reopenedStore.listOutboxEntries()).map(entry => entry.operation)).toEqual([
+    const entries = await reopenedStore.listOutboxEntries()
+
+    expect(entries.map(entry => entry.operation)).toEqual([
       'upsertNote',
       'upsertNote',
       'deleteNote'
     ])
+    expect(entries.map(entry => entry.sequence)).toEqual([1, 2, 3])
   })
 
   it('seeds prototype Notes only when the store is empty', async () => {

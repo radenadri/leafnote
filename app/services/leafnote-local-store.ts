@@ -4,6 +4,8 @@ const DB_VERSION = 3
 const NOTES_STORE = 'notes'
 const TOMBSTONES_STORE = 'tombstones'
 const OUTBOX_STORE = 'outbox'
+const META_STORE = 'meta'
+const OUTBOX_SEQUENCE_KEY = 'outbox-sequence'
 
 export interface LeafnoteLocalStoreOptions {
   dbName?: string
@@ -53,6 +55,20 @@ interface StoredOutboxEntry extends Omit<OutboxEntry, 'createdAt'> {
   createdAt: string
 }
 
+interface StoredMetaValue {
+  key: string
+  value: number
+}
+
+interface LocalDatabase {
+  close: () => void
+  readAll: <T>(storeName: string) => Promise<T[]>
+  writeMany: <T>(storeName: string, values: T[]) => Promise<void>
+  saveNoteWithOutbox: (note: StoredNote, operation: OutboxOperation) => Promise<void>
+  deleteNoteWithTombstoneAndOutbox: (noteId: string, tombstone: StoredTombstone) => Promise<void>
+  restoreNoteAndRemoveTombstone: (note: StoredNote) => Promise<void>
+}
+
 export function createLeafnoteLocalStore(options: LeafnoteLocalStoreOptions = {}): LeafnoteLocalStore {
   const dbName = options.dbName ?? 'leafnote'
 
@@ -60,47 +76,42 @@ export function createLeafnoteLocalStore(options: LeafnoteLocalStoreOptions = {}
     async saveNote(note, saveOptions = {}) {
       if (!saveOptions.allowEmpty && !hasNoteContent(note)) return
 
-      const db = await openDatabase(dbName)
-      await saveNoteAndEnqueueOutbox(db, serializeNote(note), serializeOutboxEntry(createOutboxEntry('upsertNote', note.id)))
+      const db = await openLocalDatabase(dbName)
+      await db.saveNoteWithOutbox(serializeNote(note), 'upsertNote')
       db.close()
     },
 
     async listNotes() {
-      const db = await openDatabase(dbName)
-      const storedNotes = await readAllFromStore<StoredNote>(db, NOTES_STORE)
+      const db = await openLocalDatabase(dbName)
+      const storedNotes = await db.readAll<StoredNote>(NOTES_STORE)
       db.close()
 
       return sortNotes(storedNotes.map(deserializeNote))
     },
 
     async deleteNote(noteId, deletedAt = new Date()) {
-      const db = await openDatabase(dbName)
-      await deleteNoteAndWriteTombstone(
-        db,
-        noteId,
-        serializeTombstone({ noteId, deletedAt }),
-        serializeOutboxEntry(createOutboxEntry('deleteNote', noteId))
-      )
+      const db = await openLocalDatabase(dbName)
+      await db.deleteNoteWithTombstoneAndOutbox(noteId, serializeTombstone({ noteId, deletedAt }))
       db.close()
     },
 
     async restoreNote(note) {
-      const db = await openDatabase(dbName)
-      await restoreNoteAndRemoveTombstone(db, serializeNote(note))
+      const db = await openLocalDatabase(dbName)
+      await db.restoreNoteAndRemoveTombstone(serializeNote(note))
       db.close()
     },
 
     async listTombstones() {
-      const db = await openDatabase(dbName)
-      const storedTombstones = await readAllFromStore<StoredTombstone>(db, TOMBSTONES_STORE)
+      const db = await openLocalDatabase(dbName)
+      const storedTombstones = await db.readAll<StoredTombstone>(TOMBSTONES_STORE)
       db.close()
 
       return storedTombstones.map(deserializeTombstone)
     },
 
     async listOutboxEntries() {
-      const db = await openDatabase(dbName)
-      const storedOutboxEntries = await readAllFromStore<StoredOutboxEntry>(db, OUTBOX_STORE)
+      const db = await openLocalDatabase(dbName)
+      const storedOutboxEntries = await db.readAll<StoredOutboxEntry>(OUTBOX_STORE)
       db.close()
 
       return storedOutboxEntries.map(deserializeOutboxEntry).sort((a, b) => a.sequence - b.sequence)
@@ -110,8 +121,8 @@ export function createLeafnoteLocalStore(options: LeafnoteLocalStoreOptions = {}
       const existingNotes = await this.listNotes()
       if (existingNotes.length > 0) return
 
-      const db = await openDatabase(dbName)
-      await writeManyToStore(db, NOTES_STORE, notes.filter(hasNoteContent).map(serializeNote))
+      const db = await openLocalDatabase(dbName)
+      await db.writeMany(NOTES_STORE, notes.filter(hasNoteContent).map(serializeNote))
       db.close()
     }
   }
@@ -125,21 +136,46 @@ function sortNotes(notes: Note[]) {
   return [...notes].sort((a, b) => b.updatedAt.getTime() - a.updatedAt.getTime())
 }
 
-function openDatabase(dbName: string) {
+async function openLocalDatabase(dbName: string): Promise<LocalDatabase> {
+  const database = await openIndexedDatabase(dbName)
+
+  return {
+    close() {
+      database.close()
+    },
+
+    readAll(storeName) {
+      return readAllFromStore(database, storeName)
+    },
+
+    writeMany(storeName, values) {
+      return writeManyToStore(database, storeName, values)
+    },
+
+    saveNoteWithOutbox(note, operation) {
+      return writeNoteAndOutbox(database, note, operation)
+    },
+
+    deleteNoteWithTombstoneAndOutbox(noteId, tombstone) {
+      return deleteNoteAndWriteTombstoneAndOutbox(database, noteId, tombstone)
+    },
+
+    restoreNoteAndRemoveTombstone(note) {
+      return restoreNoteAndDeleteTombstone(database, note)
+    }
+  }
+}
+
+function openIndexedDatabase(dbName: string) {
   return new Promise<IDBDatabase>((resolve, reject) => {
     const request = indexedDB.open(dbName, DB_VERSION)
 
     request.onupgradeneeded = () => {
       const db = request.result
-      if (!db.objectStoreNames.contains(NOTES_STORE)) {
-        db.createObjectStore(NOTES_STORE, { keyPath: 'id' })
-      }
-      if (!db.objectStoreNames.contains(TOMBSTONES_STORE)) {
-        db.createObjectStore(TOMBSTONES_STORE, { keyPath: 'noteId' })
-      }
-      if (!db.objectStoreNames.contains(OUTBOX_STORE)) {
-        db.createObjectStore(OUTBOX_STORE, { keyPath: 'id' })
-      }
+      createStoreIfMissing(db, NOTES_STORE, 'id')
+      createStoreIfMissing(db, TOMBSTONES_STORE, 'noteId')
+      createStoreIfMissing(db, OUTBOX_STORE, 'id')
+      createStoreIfMissing(db, META_STORE, 'key')
     }
 
     request.onsuccess = () => resolve(request.result)
@@ -147,7 +183,13 @@ function openDatabase(dbName: string) {
   })
 }
 
-function writeManyToStore(db: IDBDatabase, storeName: string, values: StoredNote[]) {
+function createStoreIfMissing(db: IDBDatabase, storeName: string, keyPath: string) {
+  if (!db.objectStoreNames.contains(storeName)) {
+    db.createObjectStore(storeName, { keyPath })
+  }
+}
+
+function writeManyToStore<T>(db: IDBDatabase, storeName: string, values: T[]) {
   return new Promise<void>((resolve, reject) => {
     const transaction = db.transaction(storeName, 'readwrite')
     const store = transaction.objectStore(storeName)
@@ -167,54 +209,59 @@ function writeManyToStore(db: IDBDatabase, storeName: string, values: StoredNote
   })
 }
 
-function saveNoteAndEnqueueOutbox(db: IDBDatabase, note: StoredNote, outboxEntry: StoredOutboxEntry) {
+function writeNoteAndOutbox(db: IDBDatabase, note: StoredNote, operation: OutboxOperation) {
   return new Promise<void>((resolve, reject) => {
-    const transaction = db.transaction([NOTES_STORE, OUTBOX_STORE], 'readwrite')
+    const transaction = db.transaction([NOTES_STORE, OUTBOX_STORE, META_STORE], 'readwrite')
     const notesStore = transaction.objectStore(NOTES_STORE)
     const outboxStore = transaction.objectStore(OUTBOX_STORE)
+    const metaStore = transaction.objectStore(META_STORE)
 
-    try {
-      notesStore.put(note)
-      outboxStore.put(outboxEntry)
-    } catch (error) {
-      transaction.abort()
-      reject(error)
-      return
+    const sequenceRequest = metaStore.get(OUTBOX_SEQUENCE_KEY)
+    sequenceRequest.onsuccess = () => {
+      const outboxEntry = serializeOutboxEntry(createOutboxEntry(operation, note.id, nextOutboxSequence(sequenceRequest.result)))
+      try {
+        notesStore.put(note)
+        outboxStore.put(outboxEntry)
+        metaStore.put({ key: OUTBOX_SEQUENCE_KEY, value: outboxEntry.sequence })
+      } catch (error) {
+        transaction.abort()
+        reject(error)
+      }
     }
-
+    sequenceRequest.onerror = () => reject(sequenceRequest.error)
     transaction.oncomplete = () => resolve()
     transaction.onerror = () => reject(transaction.error)
   })
 }
 
-function deleteNoteAndWriteTombstone(
-  db: IDBDatabase,
-  noteId: string,
-  tombstone: StoredTombstone,
-  outboxEntry: StoredOutboxEntry
-) {
+function deleteNoteAndWriteTombstoneAndOutbox(db: IDBDatabase, noteId: string, tombstone: StoredTombstone) {
   return new Promise<void>((resolve, reject) => {
-    const transaction = db.transaction([NOTES_STORE, TOMBSTONES_STORE, OUTBOX_STORE], 'readwrite')
+    const transaction = db.transaction([NOTES_STORE, TOMBSTONES_STORE, OUTBOX_STORE, META_STORE], 'readwrite')
     const notesStore = transaction.objectStore(NOTES_STORE)
     const tombstonesStore = transaction.objectStore(TOMBSTONES_STORE)
     const outboxStore = transaction.objectStore(OUTBOX_STORE)
+    const metaStore = transaction.objectStore(META_STORE)
 
-    try {
-      notesStore.delete(noteId)
-      tombstonesStore.put(tombstone)
-      outboxStore.put(outboxEntry)
-    } catch (error) {
-      transaction.abort()
-      reject(error)
-      return
+    const sequenceRequest = metaStore.get(OUTBOX_SEQUENCE_KEY)
+    sequenceRequest.onsuccess = () => {
+      const outboxEntry = serializeOutboxEntry(createOutboxEntry('deleteNote', noteId, nextOutboxSequence(sequenceRequest.result)))
+      try {
+        notesStore.delete(noteId)
+        tombstonesStore.put(tombstone)
+        outboxStore.put(outboxEntry)
+        metaStore.put({ key: OUTBOX_SEQUENCE_KEY, value: outboxEntry.sequence })
+      } catch (error) {
+        transaction.abort()
+        reject(error)
+      }
     }
-
+    sequenceRequest.onerror = () => reject(sequenceRequest.error)
     transaction.oncomplete = () => resolve()
     transaction.onerror = () => reject(transaction.error)
   })
 }
 
-function restoreNoteAndRemoveTombstone(db: IDBDatabase, note: StoredNote) {
+function restoreNoteAndDeleteTombstone(db: IDBDatabase, note: StoredNote) {
   return new Promise<void>((resolve, reject) => {
     const transaction = db.transaction([NOTES_STORE, TOMBSTONES_STORE], 'readwrite')
     const notesStore = transaction.objectStore(NOTES_STORE)
@@ -245,6 +292,21 @@ function readAllFromStore<T>(db: IDBDatabase, storeName: string) {
   })
 }
 
+function nextOutboxSequence(storedValue: StoredMetaValue | undefined) {
+  return (storedValue?.value ?? 0) + 1
+}
+
+function createOutboxEntry(operation: OutboxOperation, noteId: string, sequence: number): OutboxEntry {
+  return {
+    id: `${sequence}-${crypto.randomUUID()}`,
+    sequence,
+    operation,
+    noteId,
+    createdAt: new Date(),
+    processed: false
+  }
+}
+
 function serializeNote(note: Note): StoredNote {
   return {
     ...note,
@@ -259,19 +321,6 @@ function deserializeNote(note: StoredNote): Note {
     ...note,
     createdAt: new Date(note.createdAt),
     updatedAt: new Date(note.updatedAt)
-  }
-}
-
-function createOutboxEntry(operation: OutboxOperation, noteId: string): OutboxEntry {
-  const createdAt = new Date()
-  const sequence = createdAt.getTime() * 1000 + Math.floor(performance.now() * 1000)
-  return {
-    id: `${sequence}-${crypto.randomUUID()}`,
-    sequence,
-    operation,
-    noteId,
-    createdAt,
-    processed: false
   }
 }
 

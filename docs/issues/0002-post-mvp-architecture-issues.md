@@ -47,13 +47,13 @@ Refactor the IndexedDB-backed local persistence Module so callers keep the same 
 
 ## Acceptance criteria
 
-- [ ] Public Note callers can still save, list, delete, restore, seed, and verify local data through the local persistence Module.
-- [ ] Save still writes a Note and enqueues an `upsertNote` Outbox entry only after local write success.
-- [ ] Delete still removes the Note, writes a Tombstone, and enqueues a `deleteNote` Outbox entry atomically.
-- [ ] Restore still restores the Note and removes its Tombstone without resurrecting stale Tombstones.
-- [ ] Outbox entries preserve local write order with an explicit monotonic sequence owned by the persistence implementation.
-- [ ] IndexedDB store names, version handling, transactions, and record serialization are localized inside the persistence implementation.
-- [ ] Existing local persistence and local-first regression tests pass without weakening behaviour coverage.
+- [x] Public Note callers can still save, list, delete, restore, seed, and verify local data through the local persistence Module.
+- [x] Save still writes a Note and enqueues an `upsertNote` Outbox entry only after local write success.
+- [x] Delete still removes the Note, writes a Tombstone, and enqueues a `deleteNote` Outbox entry atomically.
+- [x] Restore still restores the Note and removes its Tombstone without resurrecting stale Tombstones.
+- [x] Outbox entries preserve local write order with an explicit monotonic sequence owned by the persistence implementation.
+- [x] IndexedDB store names, version handling, transactions, and record serialization are localized inside the persistence implementation.
+- [x] Existing local persistence and local-first regression tests pass without weakening behaviour coverage.
 
 ## Blocked by
 
