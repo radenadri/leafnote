@@ -109,8 +109,7 @@ Leafnote stores current app data in the browser:
   - `notes`: local Note source of truth
   - `tombstones`: Delete records for future Sync
   - `outbox`: ordered local changes for future Sync
-- `localStorage` key: `leafnote_custom_tags`
-  - custom Tag names entered in the Editor
+Tags attached to Notes persist with Notes in IndexedDB. Unattached custom Tags are session-only until attached.
 
 `app/data/mockNotes.ts` seeds the Notes store only when it is empty.
 

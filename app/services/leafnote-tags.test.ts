@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { getAvailableTags } from './leafnote-tags'
+import { getAvailableTags, normalizeTag } from './leafnote-tags'
 import type { Note } from '~/types/note'
 
 const baseNote = {
@@ -44,5 +44,10 @@ describe('Leafnote Tags', () => {
       'books',
       'travel'
     ])
+  })
+
+  it('normalizes Tag input through the Tag interface', () => {
+    expect(normalizeTag(' Travel Ideas ')).toBe('travel ideas')
+    expect(normalizeTag('   ')).toBe('')
   })
 })

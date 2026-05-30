@@ -106,14 +106,14 @@ Replace the split Tag persistence path with one Local-first Tag Module. Tag avai
 
 ## Acceptance criteria
 
-- [ ] Default Tags remain available: personal, work, ideas, journal, recipes, books.
-- [ ] Custom Tags attached to Notes persist after refresh through IndexedDB-backed data.
-- [ ] If unattached custom Tags remain supported, they persist in IndexedDB rather than `localStorage`.
-- [ ] Tag normalization and duplicate handling live behind one Tag interface.
-- [ ] Editor can attach and remove multiple Tags from a Note.
-- [ ] Notes List can filter by selected Tag with the same user-visible behaviour as before.
-- [ ] No Tag management screen, nested Tags, colors, rename, or delete workflow is added.
-- [ ] Tests verify Tag persistence/filtering through the local store seam, not separate `localStorage` setup.
+- [x] Default Tags remain available: personal, work, ideas, journal, recipes, books.
+- [x] Custom Tags attached to Notes persist after refresh through IndexedDB-backed data.
+- [x] If unattached custom Tags remain supported, they persist in IndexedDB rather than `localStorage`.
+- [x] Tag normalization and duplicate handling live behind one Tag interface.
+- [x] Editor can attach and remove multiple Tags from a Note.
+- [x] Notes List can filter by selected Tag with the same user-visible behaviour as before.
+- [x] No Tag management screen, nested Tags, colors, rename, or delete workflow is added.
+- [x] Tests verify Tag persistence/filtering through the local store seam, not separate `localStorage` setup.
 
 ## Blocked by
 

@@ -8,7 +8,7 @@ Current implementation after MVP Issues #1-#10:
 - `useLeafnote()` is the app state facade used by routes.
 - IndexedDB is the local source of truth for Notes, Tombstones, and Outbox entries.
 - `app/data/mockNotes.ts` is seed data only, used when the local Notes store is empty.
-- Custom Tag names currently also persist in `localStorage`; Tags attached to Notes persist through IndexedDB.
+- Tags attached to Notes persist through IndexedDB; unattached custom Tags are session-only until attached.
 - Sign-in is a placeholder for future Sync. No real OAuth, backend, or Sync request exists.
 - Sync copy is local-first: Local only, Saving, Saved, Syncing, Synced.
 
@@ -69,12 +69,12 @@ flowchart LR
     Facade[useLeafnote]
     Store[leafnote-local-store]
     DB[(IndexedDB)]
-    LS[(localStorage custom Tag names)]
+    Tags[Tag Module]
   end
 
   User --> Nuxt --> Pages --> UI
   Pages --> Facade --> Store --> DB
-  Facade --> LS
+  Facade --> Tags
   Store --> Notes[(Notes store)]
   Store --> Tombstones[(Tombstones store)]
   Store --> Outbox[(Outbox store)]
@@ -107,7 +107,7 @@ Current hard constraints:
 It owns:
 
 - `notes`: Nuxt `useState<Note[]>` hydrated from IndexedDB.
-- `customTags`: Nuxt `useState<string[]>` hydrated from `localStorage`.
+- `customTags`: Nuxt `useState<string[]>` for session-only unattached Tag names.
 - `allTags`: default Tags + custom Tags + Tags attached to local Notes.
 - `loadNotes()`: seeds first-run mock Notes if IndexedDB is empty, then loads local Notes.
 - `saveNote()`: writes a Note through the local store, then refreshes state.
@@ -182,13 +182,12 @@ Default Tags live in `app/types/note.ts`:
 - recipes
 - books
 
-Current Tag persistence is mixed:
+Current Tag behaviour:
 
 - Tags attached to Notes persist in IndexedDB.
-- Custom Tag names are also stored in `localStorage` under `leafnote_custom_tags`.
-- `getAvailableTags()` returns default Tags, custom Tags, and Tags attached to local Notes.
-
-This mixed Tag path is known architecture debt and tracked in `docs/issues/0002-post-mvp-architecture-issues.md`.
+- Unattached custom Tag names are session-only until attached to a Note.
+- `getAvailableTags()` returns default Tags, session custom Tags, and Tags attached to local Notes.
+- `normalizeTag()` owns Tag normalization.
 
 ### 3.7 Search
 
@@ -282,13 +281,6 @@ Stores:
 | `tombstones` | `noteId` | local Delete records for future Sync |
 | `outbox` | `id` | ordered local Note changes waiting for future Sync |
 
-### localStorage
-
-Current key:
-
-- `leafnote_custom_tags`: custom Tag names entered in the Editor.
-
-This is not used for Note content.
 
 ## 6. Validation and CI
 

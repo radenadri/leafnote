@@ -1,7 +1,6 @@
 import { mockNotes } from '~/data/mockNotes'
 import { createLeafnoteLocalStore } from '~/services/leafnote-local-store'
-import { getAvailableTags } from '~/services/leafnote-tags'
-import { CUSTOM_TAGS_KEY } from '~/types/note'
+import { getAvailableTags, normalizeTag } from '~/services/leafnote-tags'
 import type { Note } from '~/types/note'
 
 export function useLeafnote() {
@@ -19,29 +18,14 @@ export function useLeafnote() {
   }
 
   function loadCustomTags() {
-    if (!import.meta.client) return
-
-    const stored = localStorage.getItem(CUSTOM_TAGS_KEY)
-    if (!stored) return
-
-    try {
-      customTags.value = JSON.parse(stored)
-    } catch {
-      customTags.value = []
-    }
-  }
-
-  function saveCustomTags() {
-    if (!import.meta.client) return
-    localStorage.setItem(CUSTOM_TAGS_KEY, JSON.stringify(customTags.value))
+    customTags.value = []
   }
 
   function addCustomTag(tag: string) {
-    const normalized = tag.trim().toLowerCase()
+    const normalized = normalizeTag(tag)
     if (!normalized || allTags.value.includes(normalized)) return
 
     customTags.value = [...customTags.value, normalized]
-    saveCustomTags()
   }
 
   async function saveNote(note: Note, options?: { allowEmpty?: boolean }) {

@@ -16,5 +16,3 @@ export const DEFAULT_TAGS = [
   'recipes',
   'books'
 ]
-
-export const CUSTOM_TAGS_KEY = 'leafnote_custom_tags'

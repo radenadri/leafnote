@@ -23,8 +23,12 @@ export function getAvailableTags({ notes, customTags }: AvailableTagsInput) {
   return availableTags
 }
 
+export function normalizeTag(tag: string) {
+  return tag.trim().toLowerCase()
+}
+
 function addTag(tag: string, seenTags: Set<string>, availableTags: string[]) {
-  const normalized = tag.trim().toLowerCase()
+  const normalized = normalizeTag(tag)
   if (!normalized || seenTags.has(normalized)) return
 
   seenTags.add(normalized)

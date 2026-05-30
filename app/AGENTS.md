@@ -17,13 +17,13 @@ pnpm lint
 pnpm build
 ```
 
-Notes persist in browser IndexedDB through `app/services/leafnote-local-store.ts`. `app/data/mockNotes.ts` is seed data only when the local Notes store is empty. Tombstones and Outbox entries also live in IndexedDB. Custom Tag names currently also use browser `localStorage`; Tags attached to Notes persist with Notes.
+Notes persist in browser IndexedDB through `app/services/leafnote-local-store.ts`. `app/data/mockNotes.ts` is seed data only when the local Notes store is empty. Tombstones and Outbox entries also live in IndexedDB. Tags attached to Notes persist with Notes; unattached custom Tags are session-only until attached.
 
 ## Patterns & Conventions
 
 - Use `<script setup lang="ts">` for all Vue files.
 - Keep route-level orchestration in `app/pages/**`; move reusable UI to `app/components/leafnote/**`.
-- Use `useLeafnote()` as app state facade. Do not read/write IndexedDB, `localStorage`, or `mockNotes` directly from pages.
+- Use `useLeafnote()` as app state facade. Do not read/write IndexedDB or `mockNotes` directly from pages.
 - For route navigation, existing pattern is `navigateTo('/path')` in page/component handlers.
 - For icons, use local installed collections: `i-lucide-*` or `i-simple-icons-*`.
 - For overlays/toasts, use Nuxt UI patterns already in app:
@@ -59,7 +59,7 @@ Notes persist in browser IndexedDB through `app/services/leafnote-local-store.ts
 ```bash
 find app/pages app/components/leafnote -type f | sort
 rg -n "defineProps|defineEmits|computed\(|watch\(|onMounted" app
-rg -n "useLeafnote\(|createLeafnoteLocalStore|indexedDB|Outbox|Tombstone|localStorage|CUSTOM_TAGS_KEY" app
+rg -n "useLeafnote\(|createLeafnoteLocalStore|indexedDB|Outbox|Tombstone|normalizeTag|getAvailableTags" app
 rg -n "UModal|USlideover|useToast|USeparator|UIcon" app
 rg -n "bg-leaf|text-sync|safe-top|safe-bottom|focus-ring" app
 ```
