@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { getNoteList } from '~/services/leafnote-note-query'
 import type { LeafnoteStatus } from '~/services/leafnote-status'
 import type { Note } from '~/types/note'
 
@@ -16,14 +17,7 @@ onMounted(async () => {
   loadCustomTags()
 })
 
-const filteredNotes = computed(() => {
-  const result = [...notes.value].sort(
-    (a, b) => b.updatedAt.getTime() - a.updatedAt.getTime()
-  )
-
-  if (!selectedTag.value) return result
-  return result.filter(note => note.tags.includes(selectedTag.value!))
-})
+const filteredNotes = computed(() => getNoteList(notes.value, selectedTag.value))
 
 function openNote(note: Note) {
   navigateTo(`/notes/${note.id}`)

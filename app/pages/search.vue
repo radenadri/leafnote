@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { searchNotes } from '~/services/leafnote-search'
+import { searchNotes } from '~/services/leafnote-note-query'
 import type { Note } from '~/types/note'
 
 const { notes, loadNotes } = useLeafnote()

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { searchNotes } from './leafnote-search'
+import { searchNotes } from './leafnote-note-query'
 import type { Note } from '../types/note'
 
 function makeNote(overrides: Partial<Note>): Note {

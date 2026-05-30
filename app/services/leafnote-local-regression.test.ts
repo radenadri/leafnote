@@ -3,7 +3,7 @@ import { indexedDB } from 'fake-indexeddb'
 import { createLeafnoteEditorSession } from './leafnote-editor-session'
 import { createLeafnoteLocalStore } from './leafnote-local-store'
 import { getAvailableTags } from './leafnote-tags'
-import { searchNotes } from './leafnote-search'
+import { getNoteList, searchNotes } from './leafnote-note-query'
 import type { Note } from '../types/note'
 
 const dbName = 'leafnote-regression-test'
@@ -164,7 +164,7 @@ describe('Leafnote local-first MVP regression', () => {
       note({ id: 'recipe-note', title: 'Recipe', tags: ['recipes'] })
     ]
 
-    expect(taggedNotes.filter(item => item.tags.includes('journal'))).toEqual([
+    expect(getNoteList(taggedNotes, 'journal')).toEqual([
       taggedNotes[0]
     ])
     expect(getAvailableTags({ notes: taggedNotes, customTags: [] })).toContain('journal')

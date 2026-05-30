@@ -137,14 +137,14 @@ Create one Note query Module that owns local Note projections for newest-first N
 
 ## Acceptance criteria
 
-- [ ] Notes List still shows Notes newest-first by `updatedAt`.
-- [ ] Notes List still filters by selected Tag.
-- [ ] All filter still shows every visible Note.
-- [ ] Search still matches title and body only.
-- [ ] Search still ignores Tags.
-- [ ] Blank Search query still shows the Search prompt.
-- [ ] No-result and result-count behaviour remains unchanged.
-- [ ] Notes List and Search tests verify behaviour through the shared Note query Module.
+- [x] Notes List still shows Notes newest-first by `updatedAt`.
+- [x] Notes List still filters by selected Tag.
+- [x] All filter still shows every visible Note.
+- [x] Search still matches title and body only.
+- [x] Search still ignores Tags.
+- [x] Blank Search query still shows the Search prompt.
+- [x] No-result and result-count behaviour remains unchanged.
+- [x] Notes List and Search tests verify behaviour through the shared Note query Module.
 
 ## Blocked by
 
