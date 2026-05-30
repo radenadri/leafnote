@@ -56,8 +56,17 @@
   --sync-offline: 30 8% 50%;
 
   --ui-primary: hsl(var(--primary));
+  --ui-secondary: hsl(var(--secondary));
+  --ui-success: hsl(var(--leaf-500));
+  --ui-info: hsl(var(--leaf-500));
+  --ui-warning: hsl(var(--sync-syncing));
+  --ui-error: hsl(var(--destructive));
   --ui-bg: hsl(var(--background));
+  --ui-bg-muted: hsl(var(--secondary));
+  --ui-bg-elevated: hsl(var(--card));
   --ui-text: hsl(var(--foreground));
+  --ui-text-muted: hsl(var(--muted-foreground));
+  --ui-border: hsl(var(--border));
 }
 
 .dark {
@@ -214,5 +223,23 @@ body {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
 }
+
+button,
+a,
+[role="button"] {
+  -webkit-tap-highlight-color: hsl(var(--leaf-500) / 0.16);
+  accent-color: hsl(var(--leaf-500));
+}
+
+button:hover,
+a:hover,
+[role="button"]:hover {
+  --ui-primary: hsl(var(--leaf-500));
+  --ui-color-primary-500: hsl(var(--leaf-500));
+  --ui-color-primary-600: hsl(var(--leaf-600));
+  --ui-bg-accented: hsl(var(--leaf-50));
+  --ui-border-accented: hsl(var(--leaf-300));
+}
+
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 .scrollbar-hide { scrollbar-width: none; }
