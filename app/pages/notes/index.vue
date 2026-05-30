@@ -1,16 +1,17 @@
 <script setup lang="ts">
 import { getNoteList } from '~/services/leafnote-note-query'
+import { createLeafnoteNoteRemoval } from '~/services/leafnote-note-removal'
+import { createLeafnoteLocalStore } from '~/services/leafnote-local-store'
 import type { LeafnoteStatus } from '~/services/leafnote-status'
 import type { Note } from '~/types/note'
 
 const toast = useToast()
-const { notes, allTags, loadNotes, loadCustomTags, deleteNote, restoreNote } = useLeafnote()
+const { notes, allTags, loadNotes, loadCustomTags } = useLeafnote()
+const localStore = createLeafnoteLocalStore()
+const noteRemoval = createLeafnoteNoteRemoval({ store: localStore })
 
 const syncStatus = shallowRef<LeafnoteStatus>('local-only')
 const selectedTag = shallowRef<string | null>(null)
-const recentlyDeletedNote = ref<Note | null>(null)
-const showUndo = ref(false)
-let undoTimer: ReturnType<typeof setTimeout> | undefined
 
 onMounted(async () => {
   await loadNotes()
@@ -24,14 +25,8 @@ function openNote(note: Note) {
 }
 
 async function removeNote(note: Note) {
-  recentlyDeletedNote.value = note
-  showUndo.value = true
-  await deleteNote(note)
-  if (undoTimer) clearTimeout(undoTimer)
-  undoTimer = setTimeout(() => {
-    recentlyDeletedNote.value = null
-    showUndo.value = false
-  }, 8000)
+  await noteRemoval.confirmDelete(note)
+  notes.value = await localStore.listNotes()
 
   toast.add({
     title: 'Note deleted',
@@ -41,14 +36,13 @@ async function removeNote(note: Note) {
 }
 
 async function undoDelete() {
-  if (!recentlyDeletedNote.value) return
-
-  const note = recentlyDeletedNote.value
-  recentlyDeletedNote.value = null
-  showUndo.value = false
-  if (undoTimer) clearTimeout(undoTimer)
-  await restoreNote(note)
+  await noteRemoval.undoDelete()
+  notes.value = await localStore.listNotes()
 }
+
+onBeforeUnmount(() => {
+  noteRemoval.dispose()
+})
 </script>
 
 <template>
@@ -128,7 +122,7 @@ async function undoDelete() {
     </main>
 
     <div
-      v-if="showUndo"
+      v-if="noteRemoval.undo.visible.value"
       class="mobile-fixed-full fixed bottom-4 z-20 px-4"
       role="status"
     >

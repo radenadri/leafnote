@@ -167,14 +167,14 @@ Move Delete/Undo state and behaviour into one deeper Note removal Module. Swipe 
 
 ## Acceptance criteria
 
-- [ ] Swipe-left or delete trigger still opens confirmation before removal.
-- [ ] Confirmed Delete still removes the Note from the Notes List immediately.
-- [ ] Confirmed Delete still writes a Tombstone and `deleteNote` Outbox entry.
-- [ ] Undo banner/toast state is owned by the Note removal Module, not scattered in the Notes List route.
-- [ ] Undo within the window restores the Note and removes its Tombstone.
-- [ ] Expired Undo keeps the Note deleted.
-- [ ] Future Delete triggers can reuse the same Note removal interface without duplicating timers or restore logic.
-- [ ] Tests cover Delete/Undo/Tombstone/Outbox as one behaviour through the Note removal seam.
+- [x] Swipe-left or delete trigger still opens confirmation before removal.
+- [x] Confirmed Delete still removes the Note from the Notes List immediately.
+- [x] Confirmed Delete still writes a Tombstone and `deleteNote` Outbox entry.
+- [x] Undo banner/toast state is owned by the Note removal Module, not scattered in the Notes List route.
+- [x] Undo within the window restores the Note and removes its Tombstone.
+- [x] Expired Undo keeps the Note deleted.
+- [x] Future Delete triggers can reuse the same Note removal interface without duplicating timers or restore logic.
+- [x] Tests cover Delete/Undo/Tombstone/Outbox as one behaviour through the Note removal seam.
 
 ## Blocked by
 
