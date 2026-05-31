@@ -76,8 +76,8 @@ function removeTag(tag: string) {
 </script>
 
 <template>
-  <div class="min-h-screen bg-background flex flex-col safe-top">
-    <header class="flex items-center justify-between px-2 py-2 border-b border-border/30">
+  <div class="h-screen bg-background flex flex-col safe-top">
+    <header class="flex items-center justify-between px-2 py-2 border-b border-border/30 flex-shrink-0">
       <button
         type="button"
         class="p-2 rounded-lg hover:bg-secondary transition-colors focus-ring"
@@ -113,7 +113,7 @@ function removeTag(tag: string) {
       </div>
     </header>
 
-    <main class="flex-1 px-4 py-4 pb-20 animate-fade-in">
+    <main class="flex-1 overflow-y-auto px-4 py-4 animate-fade-in">
       <input
         v-model="title"
         type="text"
@@ -125,12 +125,13 @@ function removeTag(tag: string) {
       <textarea
         v-model="content"
         placeholder="Start writing..."
-        class="w-full flex-1 min-h-[60vh] text-note-body font-serif text-foreground bg-transparent border-none outline-none resize-none placeholder:text-ink-faint leading-relaxed"
+        class="w-full min-h-[60vh] text-note-body font-serif text-foreground bg-transparent border-none outline-none resize-none placeholder:text-ink-faint leading-relaxed"
         @blur="saveNow"
       />
     </main>
 
     <LeafnoteEditorToolbar
+      class="flex-shrink-0"
       @bold="console.log('Bold clicked')"
       @heading="console.log('Heading clicked')"
       @checklist="console.log('Checklist clicked')"
