@@ -25,21 +25,21 @@ export function createLeafnoteEditorSession(options: LeafnoteEditorSessionOption
   const now = options.now ?? (() => new Date())
   const noteId = options.initialNote?.id ?? options.noteId
   const createdAt = options.initialNote?.createdAt ?? now()
-  let title = options.initialNote?.title ?? ''
-  let content = options.initialNote?.content ?? ''
-  let tags = options.initialNote?.tags ? [...options.initialNote.tags] : []
+
+  let currentNote: Note = {
+    id: noteId,
+    title: options.initialNote?.title ?? '',
+    content: options.initialNote?.content ?? '',
+    tags: options.initialNote?.tags ? [...options.initialNote.tags] : [],
+    createdAt,
+    updatedAt: now(),
+    syncStatus: 'local'
+  }
+
   let currentStatus: LeafnoteStatus = 'local-only'
   const note = {
     get value(): Note {
-      return {
-        id: noteId,
-        title,
-        content,
-        tags: [...tags],
-        createdAt,
-        updatedAt: now(),
-        syncStatus: 'local'
-      }
+      return currentNote
     }
   }
   const status = {
@@ -76,17 +76,17 @@ export function createLeafnoteEditorSession(options: LeafnoteEditorSessionOption
     status,
 
     setTitle(nextTitle) {
-      title = nextTitle
+      currentNote = { ...currentNote, title: nextTitle }
       scheduleSave()
     },
 
     setContent(nextContent) {
-      content = nextContent
+      currentNote = { ...currentNote, content: nextContent }
       scheduleSave()
     },
 
     setTags(nextTags) {
-      tags = [...nextTags]
+      currentNote = { ...currentNote, tags: [...nextTags] }
       scheduleSave()
     },
 

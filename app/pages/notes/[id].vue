@@ -9,18 +9,32 @@ const localStore = createLeafnoteLocalStore()
 const id = computed(() => String(route.params.id))
 const isTagSheetOpen = shallowRef(false)
 const session = shallowRef<ReturnType<typeof createLeafnoteEditorSession>>()
+const noteState = shallowRef<{ title: string, content: string, tags: string[] }>({
+  title: '',
+  content: '',
+  tags: []
+})
 
 const title = computed({
-  get: () => session.value?.note.value.title ?? '',
-  set: value => session.value?.setTitle(value)
+  get: () => noteState.value.title,
+  set: (value) => {
+    noteState.value = { ...noteState.value, title: value }
+    session.value?.setTitle(value)
+  }
 })
 const content = computed({
-  get: () => session.value?.note.value.content ?? '',
-  set: value => session.value?.setContent(value)
+  get: () => noteState.value.content,
+  set: (value) => {
+    noteState.value = { ...noteState.value, content: value }
+    session.value?.setContent(value)
+  }
 })
 const tags = computed({
-  get: () => session.value?.note.value.tags ?? [],
-  set: value => session.value?.setTags(value)
+  get: () => noteState.value.tags,
+  set: (value) => {
+    noteState.value = { ...noteState.value, tags: value }
+    session.value?.setTags(value)
+  }
 })
 const syncStatus = computed(() => session.value?.status.value ?? 'local-only')
 
@@ -34,6 +48,12 @@ onMounted(async () => {
     noteId: id.value === 'new' ? crypto.randomUUID() : id.value,
     initialNote: existingNote
   })
+
+  noteState.value = {
+    title: session.value.note.value.title,
+    content: session.value.note.value.content,
+    tags: [...session.value.note.value.tags]
+  }
 })
 
 onBeforeUnmount(() => {
@@ -127,7 +147,7 @@ function removeTag(tag: string) {
           <LeafnoteTagPicker
             :selected-tags="tags"
             :available-tags="allTags"
-            @update:selected-tags="tags = $event"
+            @update:selectedTags="tags = $event"
             @add-custom-tag="addCustomTag"
           />
         </div>
