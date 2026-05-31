@@ -147,7 +147,7 @@ function removeTag(tag: string) {
           <LeafnoteTagPicker
             :selected-tags="tags"
             :available-tags="allTags"
-            @update:selectedTags="tags = $event"
+            @update:selected-tags="tags = $event"
             @add-custom-tag="addCustomTag"
           />
         </div>

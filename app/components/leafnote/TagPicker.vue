@@ -5,8 +5,8 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits<{
-  'update:selectedTags': [tags: string[]]
-  'addCustomTag': [tag: string]
+  'update:selected-tags': [tags: string[]]
+  'add-custom-tag': [tag: string]
 }>()
 
 const isAddingTag = shallowRef(false)
@@ -14,11 +14,11 @@ const newTagName = shallowRef('')
 
 function toggleTag(tag: string) {
   if (props.selectedTags.includes(tag)) {
-    emit('update:selectedTags', props.selectedTags.filter(item => item !== tag))
+    emit('update:selected-tags', props.selectedTags.filter(item => item !== tag))
     return
   }
 
-  emit('update:selectedTags', [...props.selectedTags, tag])
+  emit('update:selected-tags', [...props.selectedTags, tag])
 }
 
 function addTag() {
@@ -26,11 +26,11 @@ function addTag() {
   if (!trimmed) return
 
   if (!props.availableTags.includes(trimmed)) {
-    emit('addCustomTag', trimmed)
+    emit('add-custom-tag', trimmed)
   }
 
   if (!props.selectedTags.includes(trimmed)) {
-    emit('update:selectedTags', [...props.selectedTags, trimmed])
+    emit('update:selected-tags', [...props.selectedTags, trimmed])
   }
 
   newTagName.value = ''
