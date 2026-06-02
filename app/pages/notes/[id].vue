@@ -54,6 +54,15 @@ onMounted(async () => {
     content: session.value.note.value.content,
     tags: [...session.value.note.value.tags]
   }
+
+  // Set CSS variable for viewport height (fallback for browsers without dvh support)
+  const setVh = () => {
+    const vh = window.innerHeight * 0.01
+    document.documentElement.style.setProperty('--vh', `${vh}px`)
+  }
+  setVh()
+  window.addEventListener('resize', setVh)
+  window.visualViewport?.addEventListener('resize', setVh)
 })
 
 onBeforeUnmount(() => {
@@ -76,7 +85,7 @@ function removeTag(tag: string) {
 </script>
 
 <template>
-  <div class="h-screen bg-background flex flex-col safe-top">
+  <div class="h-screen-mobile bg-background flex flex-col safe-top">
     <header class="flex items-center justify-between px-2 py-2 border-b border-border/30 flex-shrink-0">
       <button
         type="button"

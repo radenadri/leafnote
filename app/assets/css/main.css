@@ -143,6 +143,20 @@
 
 * { border-color: hsl(var(--border)); }
 
+/* Mobile viewport height handling for keyboard */
+@supports (height: 100dvh) {
+  .h-screen-mobile {
+    height: 100dvh;
+  }
+}
+
+@supports not (height: 100dvh) {
+  .h-screen-mobile {
+    height: 100vh;
+    height: calc(var(--vh, 1vh) * 100);
+  }
+}
+
 body {
   background-color: hsl(var(--secondary));
   color: hsl(var(--foreground));
